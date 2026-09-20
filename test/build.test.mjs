@@ -73,3 +73,12 @@ test('main.js implements the expected effects hooks', async () => {
     assert.ok(js.includes(needle), `main.js should reference ${needle}`);
   }
 });
+
+test('tensor.js is a three.js module with the expected guardrails', async () => {
+  await run('node', ['src/build.mjs']);
+  const js = await readFile(join(root, 'dist/assets/js/tensor.js'), 'utf8');
+  assert.ok(js.includes("vendor/three.module.js"));
+  assert.ok(js.includes('prefers-reduced-motion'));
+  assert.ok(js.includes('visibilitychange'));
+  assert.ok(js.includes('IntersectionObserver'));
+});
