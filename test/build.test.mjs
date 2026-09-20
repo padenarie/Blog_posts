@@ -82,3 +82,11 @@ test('tensor.js is a three.js module with the expected guardrails', async () => 
   assert.ok(js.includes('visibilitychange'));
   assert.ok(js.includes('IntersectionObserver'));
 });
+
+test('figures.js exposes a registry and ships tensor-wave', async () => {
+  await run('node', ['src/build.mjs']);
+  const js = await readFile(join(root, 'dist/assets/js/figures.js'), 'utf8');
+  assert.ok(js.includes('registerFigure'));
+  assert.ok(js.includes('tensor-wave'));
+  assert.ok(js.includes('data-figure'));
+});
