@@ -56,3 +56,12 @@ test('zero posts: home still builds (Review Focus #3)', async () => {
     await rename(stash, postsDir); // always restore the real posts dir
   }
 });
+
+test('main.css defines the design tokens', async () => {
+  await run('node', ['src/build.mjs']);
+  const css = await readFile(join(root, 'dist/assets/css/main.css'), 'utf8');
+  assert.ok(css.includes('--accent'));
+  assert.ok(css.includes('[data-theme="light"]'));
+  assert.ok(css.includes('.tensor-bg'));
+  assert.ok(css.includes('prefers-reduced-motion'));
+});
