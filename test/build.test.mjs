@@ -90,3 +90,11 @@ test('figures.js exposes a registry and ships tensor-wave', async () => {
   assert.ok(js.includes('tensor-wave'));
   assert.ok(js.includes('data-figure'));
 });
+
+test('README documents the required workflow', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const md = await readFile(join(root, 'README.md'), 'utf8');
+  for (const needle of ['npm run dev', 'content/posts', 'data-figure', 'Dockerfile']) {
+    assert.ok(md.includes(needle), `README should mention ${needle}`);
+  }
+});
