@@ -8,7 +8,7 @@
   --text-muted: #8b98a5;
   --border: #1f2937;
   --grid-line: rgba(148, 163, 184, 0.06);
-  --maxw: 68ch;
+  --maxw: 68ch;   /* text column width for mobile  */
   --radius: 10px;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
@@ -22,6 +22,11 @@
   --border: #dbe2ea;
   --grid-line: rgba(15, 23, 42, 0.05);
   color-scheme: light;
+}
+
+/* Wider prose column on desktop; mobile keeps the base 68ch. */
+@media (min-width: 720px) {
+  :root { --maxw: 90ch; }
 }
 
 /* ============ base ============ */
@@ -57,10 +62,12 @@ a:hover { text-decoration: underline; }
 .tensor-bg {
   display: none;
 }
+/* TENSOR DIMMING: tune this opacity to taste (1 = full brightness, 0 = invisible).
+   A matching reduced-motion override lives at the bottom of this file. */
 .tensor-bg.active {
   display: block;
   position: fixed; inset: 0; z-index: 0;
-  opacity: 0.5;              /* dimmed so text stays readable */
+  opacity: 0.42;
   pointer-events: none;
 }
 main, .site-header, .site-footer { position: relative; z-index: 1; }
@@ -172,5 +179,5 @@ main { max-width: var(--maxw); margin: 0 auto; padding: clamp(24px, 6vw, 64px) c
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; transition: none; }
-  .tensor-bg.active { opacity: 0.35; }
+  .tensor-bg.active { opacity: 0.28; } /* TENSOR DIMMING (reduced-motion) — see note at top of .tensor-bg rule */
 }
