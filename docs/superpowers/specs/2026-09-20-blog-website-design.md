@@ -197,9 +197,11 @@ pages; `figures.js` on post pages.
     navigation.
 - **Technical motifs:**
   - A faint coordinate-grid background using pure CSS gradients.
-  - Monospace for navigation, section labels/eyebrows, meta (dates, tags), and
-    code. Large headings remain in the sans-serif for readability, with mono
-    accents. (Owner may opt for fully monospace headings later.)
+  - **Monospace headings** are a deliberate part of the identity: navigation,
+    section labels/eyebrows, **headings**, meta (dates, tags), and code all use
+    the monospace stack. Body text remains in the sans-serif for readability.
+    (If full-monospace headings ever feel heavy for long titles, easing large
+    headings back to the sans is a one-token change.)
   - The cyan accent is used sparingly: links, hover states, the tensor glow,
     and the reading-progress bar.
 - **Typography:** system font stacks for both the sans and the mono (no
@@ -223,9 +225,13 @@ pages; `figures.js` on post pages.
     `/usr/share/nginx/html` → copy custom `nginx.conf` (gzip, asset caching,
     correct MIME types) → expose port 80.
 - **`docker-compose.yml`** — a single `blog` service that builds from the
-  Dockerfile. Coolify consumes the repo, builds the image, maps the owner's
-  domain, and provisions HTTPS/TLS automatically via its reverse proxy.
-- **Workflow:** write a post → commit → push → Coolify auto-redeploys → live.
+  Dockerfile. This is the deployable artifact.
+- **Coolify wiring is out of scope for the build.** The owner links this repo
+  to Coolify manually after implementation and configures the domain, port
+  mapping, and TLS there. We only guarantee that `docker compose up` (and a
+  bare `Dockerfile` build) produce a working static site on port 80.
+- **Workflow:** write a post → commit → push → Coolify rebuilds the image →
+  live (redeploy behavior depends on the owner's Coolify configuration).
 - **Local development:** `npm run dev` runs `src/serve.mjs --watch`: it serves
   `dist/` on a local port (Node built-in `http`, no extra dependency) and
   rebuilds (by calling the same build logic as `build.mjs`) whenever
@@ -251,6 +257,8 @@ is manual. No heavy test infrastructure.
 - Per-post asset folders (a post's own subdirectory of images)
 - A custom self-hosted web font
 - Plotly-based interactive figure types
+- Coolify repo linking and domain/TLS configuration (handled manually by the
+  owner after implementation)
 
 These are intentionally excluded from the first cut. Each is designed to be
 added later without restructuring the core.
@@ -264,4 +272,4 @@ added later without restructuring the core.
 | Interactive figure JS adds weight | Loaded only on pages that use it; figure registry centralizes and lazy-inits |
 | Vendored Three.js size | Loaded only on hero pages; single minified module; no CDN round-trips |
 | Custom front-matter parser edge cases | Constrained schema; swap to `js-yaml` if complexity grows |
-| Coolify/TLS specifics unknown | Keep compose minimal; Coolify handles proxy + TLS; verify during deployment |
+| Deployment wiring (domain/TLS/Coolify config) | Out of scope — owner links the repo to Coolify manually; we only ensure the image builds and serves on port 80 |
