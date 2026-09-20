@@ -1,0 +1,14 @@
+{
+  "name": "blog-website",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node src/build.mjs",
+    "dev": "node src/serve.mjs --watch",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "markdown-it": "^14.1.0",
+    "three": "^0.160.0"
+  }
+}
