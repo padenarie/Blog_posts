@@ -65,3 +65,11 @@ test('main.css defines the design tokens', async () => {
   assert.ok(css.includes('.tensor-bg'));
   assert.ok(css.includes('prefers-reduced-motion'));
 });
+
+test('main.js implements the expected effects hooks', async () => {
+  await run('node', ['src/build.mjs']);
+  const js = await readFile(join(root, 'dist/assets/js/main.js'), 'utf8');
+  for (const needle of ['theme-toggle', 'reading-progress', 'reveal', 'copy-btn', 'prefers-reduced-motion']) {
+    assert.ok(js.includes(needle), `main.js should reference ${needle}`);
+  }
+});
