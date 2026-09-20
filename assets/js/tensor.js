@@ -17,7 +17,7 @@ function init() {
   // idle spin, and ripple so they all move independently. Tune to taste.
   const LAYOUT = isMobile
     ? [{
-        ndc: [0.0, 0.55], n: 8, color: 0x22d3ee,        // lone tensor: the biggest one
+        ndc: [-0.3, 0.75], n: 8, color: 0x22d3ee,        // lone tensor: the biggest one
         spinAxis: [0.3, 1, 0.2], spinSpeed: 0.10,
         waveFreq: 0.7, waveAmp: 0.20, waveSpeed: 1.8,
       }]
