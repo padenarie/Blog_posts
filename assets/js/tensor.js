@@ -33,7 +33,7 @@ function init() {
           waveFreq: 1.1, waveAmp: 0.15, waveSpeed: 1.6,
         },
         {
-          ndc: [-0.55, -0.48], n: 5, color: 0xa78bfa,   // violet
+          ndc: [-0.55, -0.48], n: 4, color: 0xa78bfa,   // violet
           spinAxis: [0.4, 0.8, 0.3], spinSpeed: 0.18,
           waveFreq: 0.6, waveAmp: 0.22, waveSpeed: 2.4,
         },
@@ -96,6 +96,7 @@ function init() {
       spinAngle: 0,
       waveFreq: spec.waveFreq, waveAmp: spec.waveAmp, waveSpeed: spec.waveSpeed,
       tiltX: 0, tiltY: 0,
+      scale: 1, scaleVel: 0,   // hover expand (springs to HOVER_SCALE while hovered)
       cx: 0, cy: 0, hoverR: 0, // screen center + hover radius (see layoutScreen)
     };
   });
@@ -120,6 +121,8 @@ function init() {
   layoutScreen();
 
   const stiffness = 0.02, damping = 0.9; // spring-damper -> control-system feel
+  const HOVER_SCALE = 1.12;                // how much a hovered tensor grows
+  const SCALE_STIFF = 0.08, SCALE_DAMP = 0.82; // under-damped -> bounce on release
   let running = !document.hidden;
   let lastT = performance.now();
   document.addEventListener('visibilitychange', () => { running = !document.hidden; });
@@ -142,6 +145,12 @@ function init() {
         const targetX = hovered ? -THREE.MathUtils.clamp(dy / c.hoverR, -1, 1) * 0.9 : 0; // pitch
         c.tiltX += (targetX - c.tiltX) * 0.08;
         c.tiltY += (targetY - c.tiltY) * 0.08;
+        // Hover expand: spring toward HOVER_SCALE while hovered, 1 at rest;
+        // under-damped so releasing bounces a little before settling.
+        const targetS = hovered ? HOVER_SCALE : 1;
+        c.scaleVel = (c.scaleVel + (targetS - c.scale) * SCALE_STIFF) * SCALE_DAMP;
+        c.scale += c.scaleVel;
+        const s = c.scale;
         qIdle.setFromAxisAngle(c.axis, c.spinAngle);
         qTilt.setFromAxisAngle(Y_AXIS, c.tiltY).multiply(qTmp.setFromAxisAngle(X_AXIS, c.tiltX));
         c.points.quaternion.copy(qIdle).multiply(qTilt);
@@ -149,8 +158,9 @@ function init() {
         const pos = c.points.geometry.attributes.position.array;
         for (let n = 0; n < c.count; n++) {
           const ix = n * 3;
-          const bx = c.base[ix], by = c.base[ix + 1], bz = c.base[ix + 2];
-          const r = Math.hypot(bx, by, bz);
+          const bx0 = c.base[ix], by0 = c.base[ix + 1], bz0 = c.base[ix + 2];
+          const bx = bx0 * s, by = by0 * s, bz = bz0 * s; // rest position grows with hover scale
+          const r = Math.hypot(bx0, by0, bz0);
           const wave = Math.sin(r * c.waveFreq - t * c.waveSpeed) * c.waveAmp / (1 + r * 0.15);
           c.vel[ix] = (c.vel[ix] + (bx + wave - pos[ix]) * stiffness) * damping;
           c.vel[ix + 1] = (c.vel[ix + 1] + (by + wave - pos[ix + 1]) * stiffness) * damping;
