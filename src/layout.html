@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESCRIPTION}}" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <script>
+    // Set theme before paint to avoid a flash of the wrong theme.
+    (function () {
+      var t = localStorage.getItem('theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+      else if (matchMedia('(prefers-color-scheme: light)').matches)
+        document.documentElement.setAttribute('data-theme', 'light');
+    })();
+  </script>
+  {{HEAD_EXTRA}}
+</head>
+<body data-page="{{PAGE}}">
+  <div id="tensor-bg" class="tensor-bg" aria-hidden="true"></div>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="brand" href="/">{{SITE_NAME}}</a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="/">Home</a>
+      <a href="/about.html">About</a>
+      <button id="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
+    </nav>
+  </header>
+  <main id="main">
+    {{CONTENT}}
+  </main>
+  <footer class="site-footer">
+    <span class="footer-text">{{FOOTER_TEXT}}</span>
+  </footer>
+  <div id="reading-progress" class="reading-progress" aria-hidden="true"></div>
+  <script type="module" src="/assets/js/main.js"></script>
+  {{SCRIPTS}}
+</body>
+</html>
