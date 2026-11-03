@@ -15,26 +15,31 @@ function init() {
   const LAYOUT = isMobile
     ? [{
         ndc: [0.98, 0.34], n: 5, color: 0x22d3ee,
+        restRotation: [0.3, -0.38, 0.3],
         spinAxis: [0.3, 1, 0.2], spinSpeed: 0.10,
         waveFreq: 0.7, waveAmp: 0.20, waveSpeed: 0.55,
       }, {
         ndc: [-0.92, -0.78], n: 3, color: 0xf472b6,
+        restRotation: [-0.38, 0.25, -0.42],
         spinAxis: [1, 0.2, 0], spinSpeed: -0.08,
         waveFreq: 1.1, waveAmp: 0.15, waveSpeed: 0.45,
       }]
     : [
         {
           ndc: [0.63, 0.44], n: 6, color: 0x22d3ee,
+          restRotation: [0.32, -0.38, -0.3],
           spinAxis: [0, 1, 0], spinSpeed: 0.15,
           waveFreq: 0.8, waveAmp: 0.18, waveSpeed: 0.55,
         },
         {
           ndc: [0.70, -0.62], n: 5, color: 0xf472b6,
+          restRotation: [-0.4, 0.3, 0.4],
           spinAxis: [1, 0, 0], spinSpeed: -0.11,
           waveFreq: 1.1, waveAmp: 0.15, waveSpeed: 0.45,
         },
         {
           ndc: [-0.84, -0.64], n: 4, color: 0x22d3ee,
+          restRotation: [0.24, 0.36, -0.46],
           spinAxis: [0.4, 0.8, 0.3], spinSpeed: 0.18,
           waveFreq: 0.6, waveAmp: 0.22, waveSpeed: 0.65,
         },
@@ -152,10 +157,11 @@ function init() {
     const lines = new THREE.LineSegments(lineGeo, lineMat);
     const group = new THREE.Group();
     group.position.set(...ndcToWorld(spec.ndc));
+    group.rotation.set(...spec.restRotation);
     group.add(lines, points);
     scene.add(group);
     return {
-      group, points, lines, edgePairs, base, vel, count, n, ndc: spec.ndc,
+      group, restQuaternion: group.quaternion.clone(), points, lines, edgePairs, base, vel, count, n, ndc: spec.ndc,
       axis: new THREE.Vector3(...spec.spinAxis).normalize(),
       spinSpeed: spec.spinSpeed,
       spinAngle: 0,
@@ -223,7 +229,7 @@ function init() {
         const s = c.scale;
         qIdle.setFromAxisAngle(c.axis, c.spinAngle);
         qTilt.setFromAxisAngle(Y_AXIS, c.tiltY).multiply(qTmp.setFromAxisAngle(X_AXIS, c.tiltX));
-        c.group.quaternion.copy(qIdle).multiply(qTilt);
+        c.group.quaternion.copy(c.restQuaternion).multiply(qIdle).multiply(qTilt);
         // Ripple: each cluster has its own wave frequency / amplitude / speed.
         const pos = c.points.geometry.attributes.position.array;
         for (let n = 0; n < c.count; n++) {
