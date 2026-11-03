@@ -13,11 +13,38 @@ const escapeHtml = (s = '') =>
   String(s).replace(/[&<>"']/g, (c) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+// A small projected 3×3×3 lattice echoes the animated background beside the name.
+function renderMiniTensor() {
+  const project = (x, y, z) => [24 + (x - y) * 10, 4 + (x + y) * 4.5 + z * 11];
+  const edges = [];
+  const nodes = [];
+  for (let z = 0; z < 3; z++) {
+    for (let y = 0; y < 3; y++) {
+      for (let x = 0; x < 3; x++) {
+        const [px, py] = project(x, y, z);
+        nodes.push(`<circle cx="${px}" cy="${py}" r="1.85"/>`);
+        for (const [dx, dy, dz] of [[1, 0, 0], [0, 1, 0], [0, 0, 1]]) {
+          if (x + dx > 2 || y + dy > 2 || z + dz > 2) continue;
+          const [qx, qy] = project(x + dx, y + dy, z + dz);
+          edges.push(`M${px} ${py}L${qx} ${qy}`);
+        }
+      }
+    }
+  }
+  return `<svg class="mini-tensor" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+    <g class="mini-tensor-lattice">
+      <path class="mini-tensor-edges" d="${edges.join('')}"/>
+      <g class="mini-tensor-nodes">${nodes.join('')}</g>
+    </g>
+  </svg>`;
+}
+
 const fill = (tpl, vars) =>
   Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`{{${k}}}`, v ?? ''), tpl);
 
 async function main() {
-  const layout = await readFile(join(__dirname, 'layout.html'), 'utf8');
+  const layout = (await readFile(join(__dirname, 'layout.html'), 'utf8'))
+    .replace('{{BRAND_ICON}}', renderMiniTensor());
   const site = JSON.parse(await readFile(join(root, 'content', 'site.json'), 'utf8'));
   const aboutBody = await readFile(join(root, 'content', 'about.md'), 'utf8');
   const analytics = renderAnalyticsTags(readAnalyticsConfig());
@@ -97,7 +124,7 @@ async function main() {
     : escapeHtml(taglineAccent);
   const homeContent = `
   <section class="hero">
-    <p class="eyebrow reveal hero-kicker"><span class="kicker-line" aria-hidden="true"></span>${escapeHtml(site.name)} <span class="kicker-index" aria-hidden="true">/ 01</span></p>
+    <p class="eyebrow reveal hero-kicker">${renderMiniTensor()}${escapeHtml(site.name)} <span class="kicker-index" aria-hidden="true">/ 01</span></p>
     <h1 class="hero-title reveal">${heroTitle}</h1>
     <p class="hero-sub reveal">${escapeHtml(site.intro)}</p>
     <p class="hero-actions reveal"><a class="button-primary" href="#work">Explore the work <span aria-hidden="true">↗</span></a><a class="text-link" href="/about.html">About me <span aria-hidden="true">→</span></a></p>

@@ -8,37 +8,41 @@ function init() {
   const isMobile = matchMedia('(max-width: 768px)').matches;
 
   const FOV = 50, CAM_Z = 18, SPACING = 1.1;
+  const COLORS = {
+    cyan: { dark: 0x22d3ee, light: 0x087c92 },
+    pink: { dark: 0xf472b6, light: 0xa82c67 },
+  };
 
   // --- Cluster layout ------------------------------------------------------
   // Anchor the clusters in separate corners of the viewport. NDC coordinates
   // run from -1 to +1 on each axis; the center stays clear for the hero copy.
   const LAYOUT = isMobile
     ? [{
-        ndc: [0.98, 0.34], n: 5, color: 0x22d3ee,
+        ndc: [0.62, 0.65], n: 5, tone: 'cyan',
         restRotation: [0.3, -0.38, 0.3],
         spinAxis: [0.3, 1, 0.2], spinSpeed: 0.10,
         waveFreq: 0.7, waveAmp: 0.20, waveSpeed: 0.55,
       }, {
-        ndc: [-0.92, -0.78], n: 3, color: 0xf472b6,
+        ndc: [-0.58, -0.68], n: 3, tone: 'pink',
         restRotation: [-0.38, 0.25, -0.42],
         spinAxis: [1, 0.2, 0], spinSpeed: -0.08,
         waveFreq: 1.1, waveAmp: 0.15, waveSpeed: 0.45,
       }]
     : [
         {
-          ndc: [0.63, 0.44], n: 6, color: 0x22d3ee,
+          ndc: [0.63, 0.44], n: 6, tone: 'cyan',
           restRotation: [0.32, -0.38, -0.3],
           spinAxis: [0, 1, 0], spinSpeed: 0.15,
           waveFreq: 0.8, waveAmp: 0.18, waveSpeed: 0.55,
         },
         {
-          ndc: [0.70, -0.62], n: 5, color: 0xf472b6,
+          ndc: [0.70, -0.62], n: 5, tone: 'pink',
           restRotation: [-0.4, 0.3, 0.4],
           spinAxis: [1, 0, 0], spinSpeed: -0.11,
           waveFreq: 1.1, waveAmp: 0.15, waveSpeed: 0.45,
         },
         {
-          ndc: [-0.84, -0.64], n: 4, color: 0x22d3ee,
+          ndc: [-0.84, -0.64], n: 4, tone: 'cyan',
           restRotation: [0.24, 0.36, -0.46],
           spinAxis: [0.4, 0.8, 0.3], spinSpeed: 0.18,
           waveFreq: 0.6, waveAmp: 0.22, waveSpeed: 0.65,
@@ -96,14 +100,16 @@ function init() {
     geo.setAttribute('aFlashSeed', new THREE.BufferAttribute(flashSeeds, 1));
     const mat = new THREE.ShaderMaterial({
       uniforms: {
-        uColor: { value: new THREE.Color(spec.color) },
+        uColor: { value: new THREE.Color(COLORS[spec.tone].dark) },
         uTime: { value: 0 },
         uHover: { value: 0 },
         uPixelRatio: { value: renderer.getPixelRatio() },
+        uPointScale: { value: 1 },
+        uVisibilityFloor: { value: isMobile ? 0.22 : 0.015 },
         uReducedMotion: { value: reduced ? 1 : 0 },
       },
       vertexShader: `
-        uniform float uTime, uHover, uPixelRatio, uReducedMotion;
+        uniform float uTime, uHover, uPixelRatio, uPointScale, uVisibilityFloor, uReducedMotion;
         attribute float aPhase, aFlashSeed;
         varying float vOpacity;
         void main() {
@@ -114,9 +120,9 @@ function init() {
             + aFlashSeed * 41.0 + aPhase);
           float visibility = smoothstep(-0.35, 0.5, cycle);
           visibility = mix(visibility, 0.82, uReducedMotion);
-          vOpacity = mix(0.55, 1.0, depth) * mix(0.015, 1.0, visibility)
+          vOpacity = mix(0.55, 1.0, depth) * mix(uVisibilityFloor, 1.0, visibility)
             * (1.0 + 0.25 * uHover);
-          gl_PointSize = min(14.0, uPixelRatio * mix(4.8, 7.4, depth)
+          gl_PointSize = min(14.0 * uPointScale, uPixelRatio * uPointScale * mix(4.8, 7.4, depth)
             * (18.0 / -viewPosition.z) * (1.0 + 0.12 * uHover));
           gl_Position = projectionMatrix * viewPosition;
         }
@@ -160,7 +166,7 @@ function init() {
     const lineGeo = new THREE.BufferGeometry();
     lineGeo.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
     const lineMat = new THREE.LineBasicMaterial({
-      color: spec.color, transparent: true, opacity: isMobile ? 0.13 : 0.2,
+      color: COLORS[spec.tone].dark, transparent: true, opacity: isMobile ? 0.13 : 0.2,
       depthWrite: false,
     });
     const lines = new THREE.LineSegments(lineGeo, lineMat);
@@ -171,6 +177,7 @@ function init() {
     scene.add(group);
     return {
       group, restQuaternion: group.quaternion.clone(), points, lines, edgePairs, base, vel, count, n, ndc: spec.ndc,
+      tone: spec.tone, lineBaseOpacity: isMobile ? 0.13 : 0.2,
       axis: new THREE.Vector3(...spec.spinAxis).normalize(),
       spinSpeed: spec.spinSpeed,
       spinAngle: 0,
@@ -180,6 +187,25 @@ function init() {
       scale: 1, scaleVel: 0,   // hover expand (springs to HOVER_SCALE while hovered)
       cx: 0, cy: 0, hoverR: 0, // screen center + hover radius (see layoutScreen)
     };
+  });
+
+  // Match the canvas to the active theme, including changes made after load.
+  function syncTheme() {
+    const light = document.documentElement.dataset.theme === 'light';
+    for (const c of clusters) {
+      const color = COLORS[c.tone][light ? 'light' : 'dark'];
+      c.points.material.uniforms.uColor.value.setHex(color);
+      c.points.material.uniforms.uPointScale.value = isMobile
+        ? (light ? 1.38 : 1.25) : (light ? 1.18 : 1);
+      c.lines.material.color.setHex(color);
+      c.lineBaseOpacity = isMobile ? (light ? 0.34 : 0.27) : (light ? 0.32 : 0.2);
+      c.lines.material.opacity = c.lineBaseOpacity + c.emphasis * 0.18;
+    }
+    if (reduced) renderer.render(scene, camera);
+  }
+  syncTheme();
+  new MutationObserver(syncTheme).observe(document.documentElement, {
+    attributes: true, attributeFilter: ['data-theme'],
   });
 
   // Pointer in screen pixels (far off-screen initially so nothing is hovered).
@@ -225,7 +251,7 @@ function init() {
         c.emphasis += ((hovered ? 1 : 0) - c.emphasis) * 0.045;
         c.points.material.uniforms.uHover.value = c.emphasis;
         c.points.material.uniforms.uTime.value = t;
-        c.lines.material.opacity = (isMobile ? 0.13 : 0.2) + c.emphasis * 0.18;
+        c.lines.material.opacity = c.lineBaseOpacity + c.emphasis * 0.18;
         const targetY = hovered ? THREE.MathUtils.clamp(dx / c.hoverR, -1, 1) * 0.9 : 0; // yaw
         const targetX = hovered ? -THREE.MathUtils.clamp(dy / c.hoverR, -1, 1) * 0.9 : 0; // pitch
         c.tiltX += (targetX - c.tiltX) * 0.08;

@@ -73,6 +73,11 @@ a:hover { text-decoration: underline; }
   opacity: 0.42;
   pointer-events: none;
 }
+[data-theme="light"] .tensor-bg.active { opacity: 0.62; }
+@media (max-width: 768px) {
+  .tensor-bg.active { opacity: 0.72; }
+  [data-theme="light"] .tensor-bg.active { opacity: 0.78; }
+}
 main, .site-header, .site-footer { position: relative; z-index: 1; }
 
 /* ============ header / footer ============ */
@@ -84,7 +89,8 @@ main, .site-header, .site-footer { position: relative; z-index: 1; }
   background: color-mix(in srgb, var(--bg) 70%, transparent);
   border-bottom: 1px solid var(--border);
 }
-.brand { font-weight: 700; letter-spacing: -0.035em; color: var(--text); }
+.brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: -0.035em; color: var(--text); }
+.brand .mini-tensor { width: 30px; height: 30px; }
 .brand:hover { text-decoration: none; color: var(--accent); }
 .site-nav { display: flex; align-items: center; gap: clamp(14px, 2vw, 30px); font-size: 0.82rem; }
 .site-nav a { color: var(--text-muted); }
@@ -124,8 +130,8 @@ body[data-page="home"] main, body[data-page="demo"] main { max-width: 1320px; }
   z-index: -1;
   inset: -48px -36px;
   background: radial-gradient(ellipse 88% 78% at 42% 48%,
-    color-mix(in srgb, var(--bg) 96%, var(--accent)) 0%,
-    color-mix(in srgb, var(--bg) 88%, transparent) 62%,
+    color-mix(in srgb, var(--bg) 62%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 38%, transparent) 62%,
     transparent 100%);
   mask-image: linear-gradient(to bottom, transparent, #000 48px,
     #000 calc(100% - 48px), transparent);
@@ -160,13 +166,27 @@ body[data-page="home"] main, body[data-page="demo"] main { max-width: 1320px; }
 .hero::before {
   content: ''; position: absolute; z-index: -1; inset: 5% 18% 9% -9%;
   background: radial-gradient(ellipse 78% 72% at 42% 48%,
-    color-mix(in srgb, var(--bg) 96%, var(--accent)) 0%,
-    color-mix(in srgb, var(--bg) 88%, transparent) 53%,
+    color-mix(in srgb, var(--bg) 68%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 36%, transparent) 53%,
     transparent 100%);
   pointer-events: none;
 }
 .hero-kicker { display: flex; align-items: center; gap: 14px; }
-.kicker-line { width: 32px; height: 1px; background: var(--accent); }
+.mini-tensor { width: 48px; height: 48px; flex: none; overflow: visible; color: var(--accent); filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 42%, transparent)); }
+.mini-tensor-lattice { transform-box: view-box; transform-origin: 50% 50%; animation: mini-tensor-sway 4.5s ease-in-out infinite alternate; }
+.mini-tensor-edges { fill: none; stroke: currentColor; stroke-width: 1.1; opacity: .72; }
+.mini-tensor-nodes { fill: currentColor; }
+.mini-tensor-nodes circle { animation: mini-tensor-pulse 2.4s ease-in-out infinite alternate; }
+.mini-tensor-nodes circle:nth-child(3n) { animation-delay: -1.4s; }
+.mini-tensor-nodes circle:nth-child(3n + 1) { animation-delay: -.7s; }
+@keyframes mini-tensor-sway {
+  from { transform: rotate(-12deg) scale(.94); }
+  to { transform: rotate(12deg) scale(1.04); }
+}
+@keyframes mini-tensor-pulse {
+  from { opacity: .65; }
+  to { opacity: 1; }
+}
 .kicker-index, .section-index { color: var(--text-muted); font-family: var(--mono); font-size: .72rem; letter-spacing: .12em; }
 .kicker-index { margin-left: 8px; }
 .hero-title {
@@ -206,8 +226,8 @@ body[data-page="home"] main, body[data-page="demo"] main { max-width: 1320px; }
   .hero::before {
     inset: 0 -20px 4%;
     background: radial-gradient(ellipse 94% 74% at 38% 44%,
-      color-mix(in srgb, var(--bg) 96%, var(--accent)) 0%,
-      color-mix(in srgb, var(--bg) 86%, transparent) 62%,
+      color-mix(in srgb, var(--bg) 56%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 28%, transparent) 62%,
       transparent 100%);
   }
   .hero-bottom { font-size: .58rem; }
@@ -216,12 +236,16 @@ body[data-page="home"] main, body[data-page="demo"] main { max-width: 1320px; }
   .work-visual { display: none; }
   .hero-actions, .work-actions { gap: 18px; }
 }
-@media (max-width: 420px) {
-  .site-header { padding-inline: 20px; }
+@media (max-width: 460px) {
+  .site-header { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 10px 20px 12px; }
   .brand { font-size: .78rem; white-space: nowrap; }
-  .site-nav a[href="/"] { display: none; }
+  .brand .mini-tensor { width: 26px; height: 26px; }
+  .site-nav { justify-content: flex-start; gap: 18px; font-size: .76rem; }
+}
+@media (max-width: 420px) {
   .hero-kicker { font-size: .68rem; letter-spacing: .1em; }
-  .hero-kicker .kicker-line { width: 20px; }
+  .hero-kicker { gap: 9px; }
+  .mini-tensor { width: 42px; height: 42px; }
   .hero-kicker .kicker-index { display: none; }
 }
 
@@ -297,4 +321,10 @@ body[data-page="about"] .prose > p:first-child { font-size: 1.35rem; color: var(
   .reveal { opacity: 1; transform: none; transition: none; }
   .button-primary, .text-link, .card { transition: none; }
   .tensor-bg.active { opacity: 0.28; } /* TENSOR DIMMING (reduced-motion) — see note at top of .tensor-bg rule */
+  [data-theme="light"] .tensor-bg.active { opacity: 0.46; }
+  .mini-tensor-lattice, .mini-tensor-nodes circle { animation: none; }
+}
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+  .tensor-bg.active { opacity: 0.58; }
+  [data-theme="light"] .tensor-bg.active { opacity: 0.66; }
 }
