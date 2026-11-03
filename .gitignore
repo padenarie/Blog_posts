@@ -3,3 +3,7 @@ dist/
 .DS_Store
 *.log
 .superpowers/
+deploy/analytics/secrets/
+deploy/analytics/real-ip/
+analytics/__pycache__/
+analytics/tests/__pycache__/

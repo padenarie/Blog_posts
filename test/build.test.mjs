@@ -15,7 +15,7 @@ test('build produces the expected dist/ structure', async () => {
   await run('node', ['src/build.mjs']);
   const expect = [
     'dist/index.html', 'dist/about.html', 'dist/404.html',
-    'dist/posts/2025-01-15-hello-world.html',
+    'dist/demo.html',
     'dist/assets/css/main.css', 'dist/assets/js/main.js',
     'dist/assets/js/vendor/three.module.js',
   ];
@@ -23,6 +23,13 @@ test('build produces the expected dist/ structure', async () => {
   const home = await readFile(join(root, 'dist/index.html'), 'utf8');
   assert.ok(home.includes('data-page="home"'));
   assert.ok(home.includes('/assets/js/tensor.js')); // home always has the hero
+  assert.match(home, /Pierre-Antoine Denarié/);
+  assert.match(home, /class="section featured-work"/);
+  assert.match(home, /href="\/demo.html"/);
+  assert.doesNotMatch(home, /Hello, world/);
+  const demo = await readFile(join(root, 'dist/demo.html'), 'utf8');
+  assert.match(demo, /Launch interactive demo/);
+  assert.doesNotMatch(demo, /<iframe[^>]+src=/);
 });
 
 test('special characters in titles are escaped (Review Focus #2)', async () => {
@@ -51,7 +58,7 @@ test('zero posts: home still builds (Review Focus #3)', async () => {
     await run('node', ['src/build.mjs']);
     const home = await readFile(join(root, 'dist/index.html'), 'utf8');
     assert.ok(home.includes('data-page="home"'));
-    assert.ok(home.includes('No posts yet.'));
+    assert.ok(home.includes('Writing is on its way.'));
   } finally {
     await rename(stash, postsDir); // always restore the real posts dir
   }

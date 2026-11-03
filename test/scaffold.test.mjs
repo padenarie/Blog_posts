@@ -7,7 +7,7 @@ const root = join(import.meta.dirname, '..');
 const mustExist = [
   'package.json', '.gitignore',
   'content/site.json', 'content/about.md',
-  'content/posts/2025-01-15-hello-world.md',
+  'content/drafts/2025-01-15-hello-world.md', 'content/posts/.gitkeep',
   'assets/css/main.css', 'assets/js/main.js',
   'assets/js/figures.js', 'assets/js/tensor.js',
 ];
@@ -27,7 +27,10 @@ test('all scaffold files exist', async () => {
 
 test('site.json has the schema the build relies on', async () => {
   const site = JSON.parse(await readFile(join(root, 'content/site.json'), 'utf8'));
-  for (const k of ['name', 'tagline', 'intro', 'footer', 'accent']) {
+  for (const k of ['name', 'tagline', 'intro', 'aboutPreview', 'footer', 'accent']) {
     assert.ok(typeof site[k] === 'string' && site[k].length > 0, `site.${k}`);
+  }
+  for (const k of ['title', 'description', 'url', 'embedUrl', 'note']) {
+    assert.ok(typeof site.featuredWork[k] === 'string' && site.featuredWork[k].length > 0);
   }
 });

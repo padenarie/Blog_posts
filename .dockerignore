@@ -1,0 +1,11 @@
+.git
+node_modules
+dist
+docs
+test
+analytics/tests
+**/__pycache__
+**/*.pyc
+deploy/analytics/secrets
+deploy/analytics/real-ip
+.DS_Store

@@ -1,7 +1,15 @@
 {
-  "name": "Your Name",
-  "tagline": "Notes on control & tensors",
-  "intro": "I'm a control engineer who thinks in tensors. This is where I write about both.",
-  "footer": "© 2026 Your Name",
-  "accent": "#22d3ee"
+  "name": "Pierre-Antoine Denarié",
+  "tagline": "Making complex systems tangible.",
+  "intro": "I’m an AI consultant with a background in Systems and Control. I explore practical AI, local models, and the mathematical ideas behind useful tools.",
+  "aboutPreview": "From control engineering and tensor methods to building practical AI tools, I like turning complex ideas into things people can use.",
+  "footer": "© 2026 Pierre-Antoine Denarié",
+  "accent": "#22d3ee",
+  "featuredWork": {
+    "title": "The Cocktail Party Problem",
+    "description": "Explore how independent component analysis separates mixed audio signals, using an interactive demo built from my tensor-based blind source separation work.",
+    "url": "https://huggingface.co/spaces/Padenarie/The_Cocktail_Party_Problem",
+    "embedUrl": "https://padenarie-the-cocktail-party-problem.hf.space/",
+    "note": "The demo may take a moment to start."
+  }
 }

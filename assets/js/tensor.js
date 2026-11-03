@@ -17,23 +17,23 @@ function init() {
   // idle spin, and ripple so they all move independently. Tune to taste.
   const LAYOUT = isMobile
     ? [{
-        ndc: [-0.3, 0.20], n: 7, color: 0xf472b6,       // lone tensor: off-center left, smaller
+        ndc: [0.42, 0.18], n: 7, color: 0x22d3ee,
         spinAxis: [0.3, 1, 0.2], spinSpeed: 0.10,
         waveFreq: 0.7, waveAmp: 0.20, waveSpeed: 1.8,
       }]
     : [
         {
-          ndc: [-0.70,  0.30], n: 6, color: 0x22d3ee,   // cyan  (--accent)
+          ndc: [0.56,  0.28], n: 6, color: 0x22d3ee,
           spinAxis: [0, 1, 0], spinSpeed: 0.15,
           waveFreq: 0.8, waveAmp: 0.18, waveSpeed: 2.0,
         },
         {
-          ndc: [ 0.64, -0.12], n: 7, color: 0xf472b6,   // pink  (--accent-warm)
+          ndc: [ 0.76, -0.22], n: 7, color: 0xf472b6,
           spinAxis: [1, 0, 0], spinSpeed: -0.11,
           waveFreq: 1.1, waveAmp: 0.15, waveSpeed: 1.6,
         },
         {
-          ndc: [-0.55, -0.48], n: 4, color: 0xa78bfa,   // violet
+          ndc: [0.30, -0.54], n: 4, color: 0x22d3ee,
           spinAxis: [0.4, 0.8, 0.3], spinSpeed: 0.18,
           waveFreq: 0.6, waveAmp: 0.22, waveSpeed: 2.4,
         },

@@ -1,7 +1,8 @@
 # Blog Website
 
-A lean, file-based personal blog. Markdown in → static site out, with a
-Three.js "tensor" identity. No framework, no server, no database.
+A file-based personal blog. Markdown in → static site out, with a
+Three.js "tensor" identity. The public site has no runtime API or database;
+optional private analytics services run separately.
 
 ## Quick start
 
@@ -67,5 +68,7 @@ dist/       build output (gitignored) — what nginx serves
 
 ## Deploy
 
-`Dockerfile` + `docker-compose.yml` produce an nginx image serving `dist/` on
+`Dockerfile` + `docker-compose.yaml` produce an nginx image serving `dist/` on
 port 80. Link this repo to Coolify and configure the domain there.
+
+For Umami and the private crawler request report, see [blog analytics operations](docs/operations/blog-analytics.md).

@@ -30,9 +30,11 @@ test('serves the home page', async () => {
   assert.ok(body.includes('data-page="home"'));
 });
 
-test('serves a post', async () => {
-  const r = await fetch(`http://localhost:${PORT}/posts/2025-01-15-hello-world.html`);
+test('serves the demo and keeps the sample post unpublished', async () => {
+  const r = await fetch(`http://localhost:${PORT}/demo.html`);
   assert.equal(r.status, 200);
+  const sample = await fetch(`http://localhost:${PORT}/posts/2025-01-15-hello-world.html`);
+  assert.equal(sample.status, 404);
 });
 
 test('returns the 404 page for unknown routes', async () => {

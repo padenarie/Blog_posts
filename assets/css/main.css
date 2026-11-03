@@ -15,6 +15,7 @@
   color-scheme: dark;
 }
 [data-theme="light"] {
+  --accent: #087c92;
   --bg: #f7f9fb;
   --bg-elevated: #ffffff;
   --text: #0f172a;
@@ -99,6 +100,7 @@ main, .site-header, .site-footer { position: relative; z-index: 1; }
 
 /* ============ layout ============ */
 main { max-width: var(--maxw); margin: 0 auto; padding: clamp(24px, 6vw, 64px) clamp(16px, 5vw, 32px) 80px; }
+body[data-page="home"] main, body[data-page="demo"] main { max-width: 1160px; }
 .section { margin-top: 56px; }
 .eyebrow {
   text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.8rem;
@@ -128,12 +130,21 @@ main { max-width: var(--maxw); margin: 0 auto; padding: clamp(24px, 6vw, 64px) c
 .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
 
 /* ============ home: hero ============ */
-.hero { min-height: 60vh; display: flex; flex-direction: column; justify-content: center; }
+.hero { min-height: min(74vh, 760px); max-width: 76ch; display: flex; flex-direction: column; justify-content: center; }
 .hero-title {
-  font-size: clamp(2.2rem, 7vw, 4.5rem); line-height: 1.05;
-  margin: 0 0 18px; letter-spacing: -0.02em;
+  font-size: clamp(2.5rem, 7vw, 6rem); line-height: 1.02;
+  margin: 0 0 18px; letter-spacing: -0.045em;
 }
-.hero-sub { font-size: 1.2rem; color: var(--text-muted); max-width: 46ch; margin: 0; }
+.hero-sub { font-size: 1.2rem; color: var(--text-muted); max-width: 70ch; margin: 0; }
+.hero-actions, .work-actions { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; margin-top: 28px; }
+.featured-work { max-width: 960px; padding: clamp(24px, 5vw, 56px); border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-elevated); }
+.featured-work h2 { font-size: clamp(1.7rem, 4vw, 3rem); line-height: 1.12; }
+.featured-work > p:not(.eyebrow), .about-preview .prose, .post-body, body[data-page="about"] .prose { max-width: 70ch; }
+.work-link { display: inline-flex; min-height: 44px; align-items: center; border-bottom: 1px solid var(--accent); }
+.work-link:hover { text-decoration: none; }
+#launch-demo { min-height: 44px; padding: 10px 18px; border: 1px solid var(--accent); border-radius: var(--radius); background: var(--accent); color: var(--bg); cursor: pointer; font: inherit; }
+.demo-frame { display: block; width: 100%; min-height: 850px; border: 1px solid var(--border); border-radius: var(--radius); }
+@media (max-width: 719px) { body[data-page="home"] .hero { min-height: 58vh; } .featured-work { padding: 24px; } }
 
 /* ============ home: cards ============ */
 .card-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
