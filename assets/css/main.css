@@ -113,6 +113,30 @@ body[data-page="home"] main, body[data-page="demo"] main { max-width: 1320px; }
 .prose h1, .prose h2, .prose h3 { line-height: 1.25; margin-top: 1.6em; }
 .muted { color: var(--text-muted); }
 
+/* Fade the fixed tensor and page grid beneath text as readers scroll. */
+:where(.posts, .about-preview, .about-header-copy, .about-body, .post-body, .demo-intro) {
+  position: relative;
+  isolation: isolate;
+}
+:where(.posts, .about-preview, .about-header-copy, .about-body, .post-body, .demo-intro)::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -48px -36px;
+  background: radial-gradient(ellipse 88% 78% at 42% 48%,
+    color-mix(in srgb, var(--bg) 96%, var(--accent)) 0%,
+    color-mix(in srgb, var(--bg) 88%, transparent) 62%,
+    transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent, #000 48px,
+    #000 calc(100% - 48px), transparent);
+  pointer-events: none;
+}
+@media (max-width: 719px) {
+  :where(.posts, .about-preview, .about-header-copy, .about-body, .post-body, .demo-intro)::before {
+    inset: -32px -20px;
+  }
+}
+
 /* ============ code ============ */
 .prose pre {
   position: relative; background: var(--bg-elevated); border: 1px solid var(--border);
