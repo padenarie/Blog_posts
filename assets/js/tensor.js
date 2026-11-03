@@ -100,22 +100,24 @@ function init() {
         uTime: { value: 0 },
         uHover: { value: 0 },
         uPixelRatio: { value: renderer.getPixelRatio() },
+        uReducedMotion: { value: reduced ? 1 : 0 },
       },
       vertexShader: `
-        uniform float uTime, uHover, uPixelRatio;
+        uniform float uTime, uHover, uPixelRatio, uReducedMotion;
         attribute float aPhase, aFlashSeed;
         varying float vOpacity;
         void main() {
           vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
           float depth = clamp((viewPosition.z + 22.0) / 8.0, 0.0, 1.0);
-          float pulse = 0.5 + 0.5 * sin(uTime * 0.42 - aPhase);
-          // A small, scattered set of nodes briefly brightens at independent rates.
-          float flash = step(0.76, aFlashSeed) * pow(max(0.0,
-            sin(uTime * (0.7 + aFlashSeed * 0.8) + aFlashSeed * 41.0 + aPhase)), 18.0);
-          vOpacity = mix(0.5, 0.98, depth) * (0.86 + 0.14 * pulse)
-            * (1.0 + 0.25 * uHover + 0.55 * flash);
+          // Nodes fade almost completely out, then back in, at staggered rates.
+          float cycle = sin(uTime * (1.2 + aFlashSeed * 0.85)
+            + aFlashSeed * 41.0 + aPhase);
+          float visibility = smoothstep(-0.35, 0.5, cycle);
+          visibility = mix(visibility, 0.82, uReducedMotion);
+          vOpacity = mix(0.55, 1.0, depth) * mix(0.015, 1.0, visibility)
+            * (1.0 + 0.25 * uHover);
           gl_PointSize = min(14.0, uPixelRatio * mix(4.8, 7.4, depth)
-            * (18.0 / -viewPosition.z) * (1.0 + 0.10 * pulse + 0.12 * uHover + 0.22 * flash));
+            * (18.0 / -viewPosition.z) * (1.0 + 0.12 * uHover));
           gl_Position = projectionMatrix * viewPosition;
         }
       `,
