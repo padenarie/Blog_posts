@@ -16,6 +16,7 @@ test('build produces the expected dist/ structure', async () => {
   const expect = [
     'dist/index.html', 'dist/about.html', 'dist/404.html',
     'dist/demo.html',
+    'dist/assets/ica-signals.svg',
     'dist/assets/css/main.css', 'dist/assets/js/main.js',
     'dist/assets/js/vendor/three.module.js',
   ];
@@ -26,6 +27,7 @@ test('build produces the expected dist/ structure', async () => {
   assert.match(home, /Pierre-Antoine Denarié/);
   assert.match(home, /class="section featured-work"/);
   assert.match(home, /href="\/demo.html"/);
+  assert.match(home, /src="\/assets\/ica-signals.svg"/);
   assert.doesNotMatch(home, /Hello, world/);
   const demo = await readFile(join(root, 'dist/demo.html'), 'utf8');
   assert.match(demo, /Launch interactive demo/);

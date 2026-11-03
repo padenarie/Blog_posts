@@ -90,28 +90,37 @@ async function main() {
       ${p.tags.length ? `<ul class="tags">${p.tags.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>` : ''}
     </a>`).join('');
   const work = site.featuredWork;
+  const taglineParts = site.tagline.trim().split(/\s+/);
+  const taglineAccent = taglineParts.pop();
+  const heroTitle = taglineParts.length
+    ? `${escapeHtml(taglineParts.join(' '))} <span>${escapeHtml(taglineAccent)}</span>`
+    : escapeHtml(taglineAccent);
   const homeContent = `
   <section class="hero">
-    <p class="eyebrow reveal">${escapeHtml(site.name)}</p>
-    <h1 class="hero-title reveal">${escapeHtml(site.tagline)}</h1>
+    <p class="eyebrow reveal hero-kicker"><span class="kicker-line" aria-hidden="true"></span>${escapeHtml(site.name)} <span class="kicker-index" aria-hidden="true">/ 01</span></p>
+    <h1 class="hero-title reveal">${heroTitle}</h1>
     <p class="hero-sub reveal">${escapeHtml(site.intro)}</p>
-    <p class="hero-actions reveal"><a href="#work">Explore the work</a><a href="/about.html">About me</a></p>
+    <p class="hero-actions reveal"><a class="button-primary" href="#work">Explore the work <span aria-hidden="true">↗</span></a><a class="text-link" href="/about.html">About me <span aria-hidden="true">→</span></a></p>
+    <p class="hero-bottom" aria-hidden="true">AI / SYSTEMS / EXPERIMENTS <span>SCROLL TO EXPLORE ↓</span></p>
   </section>
   <section class="section featured-work" id="work">
-    <p class="eyebrow">Featured work</p>
-    <h2>${escapeHtml(work.title)}</h2>
-    <p>${escapeHtml(work.description)}</p>
-    <p class="muted">${escapeHtml(work.note)}</p>
-    <p class="work-actions"><a class="work-link" href="/demo.html" data-analytics-work="cocktail-party-problem" data-analytics-action="open-demo">Try the demo ↗</a>
-    <a href="${escapeHtml(work.url)}" data-analytics-work="cocktail-party-problem" data-analytics-action="open-hugging-face">Open on Hugging Face</a></p>
+    <div class="work-copy">
+      <p class="eyebrow">Featured work <span class="section-index">/ 01</span></p>
+      <h2>${escapeHtml(work.title)}</h2>
+      <p class="work-description">${escapeHtml(work.description)}</p>
+      <p class="muted work-note">${escapeHtml(work.note)}</p>
+      <p class="work-actions"><a class="button-primary" href="/demo.html" data-analytics-work="cocktail-party-problem" data-analytics-action="open-demo">Try the demo <span aria-hidden="true">↗</span></a>
+      <a class="text-link" href="${escapeHtml(work.url)}" data-analytics-work="cocktail-party-problem" data-analytics-action="open-hugging-face">Open on Hugging Face <span aria-hidden="true">→</span></a></p>
+    </div>
+    <div class="work-visual" aria-hidden="true"><img src="/assets/ica-signals.svg" alt="" loading="lazy"></div>
   </section>
   <section class="section posts">
-    <h2 class="eyebrow reveal">Writing</h2>
+    <div class="section-heading"><h2 class="eyebrow reveal">Writing</h2><span class="section-index">/ 02</span></div>
     <div class="card-grid">${cards || '<p class="prose muted">Writing is on its way.</p>'}</div>
   </section>
   <section class="section about-preview">
-    <h2 class="eyebrow">About</h2><p class="prose">${escapeHtml(site.aboutPreview)}</p>
-    <a href="/about.html">More about me</a>
+    <div class="section-heading"><h2 class="eyebrow">About</h2><span class="section-index">/ 03</span></div><p class="prose">${escapeHtml(site.aboutPreview)}</p>
+    <a class="text-link" href="/about.html">More about me <span aria-hidden="true">→</span></a>
   </section>`;
   await writeFile(join(dist, 'index.html'), fill(layout, {
     TITLE: site.name,
@@ -128,6 +137,7 @@ async function main() {
   // --- about ---
   const aboutContent = `
   <section class="page">
+    <p class="eyebrow page-kicker">The person behind the work <span class="section-index">/ About</span></p>
     <h1 class="page-title reveal">About</h1>
     <div class="prose reveal">${renderMarkdown(aboutBody)}</div>
   </section>`;
@@ -150,10 +160,12 @@ async function main() {
     PAGE: 'demo',
     SITE_NAME: escapeHtml(site.name),
     FOOTER_TEXT: escapeHtml(site.footer),
-    CONTENT: `<section class="page"><h1 class="page-title">${escapeHtml(work.title)}</h1>
-      <p class="prose">${escapeHtml(work.description)}</p><p class="muted">${escapeHtml(work.note)}</p>
-      <button id="launch-demo" type="button" data-analytics-work="cocktail-party-problem" data-analytics-action="launch-demo">Launch interactive demo</button>
-      <p><a href="${escapeHtml(work.url)}" data-analytics-work="cocktail-party-problem" data-analytics-action="open-hugging-face">Open on Hugging Face</a></p>
+    CONTENT: `<section class="page demo-page"><p class="eyebrow page-kicker">Interactive work <span class="section-index">/ ICA</span></p>
+      <h1 class="page-title">${escapeHtml(work.title)}</h1>
+      <p class="prose demo-intro">${escapeHtml(work.description)}</p>
+      <div class="demo-launch-panel"><div><p class="eyebrow">Ready when you are</p><p class="muted">${escapeHtml(work.note)}</p></div>
+      <div class="demo-actions"><button id="launch-demo" type="button" data-analytics-work="cocktail-party-problem" data-analytics-action="launch-demo">Launch interactive demo <span aria-hidden="true">↗</span></button>
+      <a class="text-link" href="${escapeHtml(work.url)}" data-analytics-work="cocktail-party-problem" data-analytics-action="open-hugging-face">Open on Hugging Face <span aria-hidden="true">→</span></a></div></div>
       <div id="demo-container" data-embed-url="${escapeHtml(work.embedUrl)}"></div></section>`,
     HEAD_EXTRA: accentStyle,
     ANALYTICS: analytics,
