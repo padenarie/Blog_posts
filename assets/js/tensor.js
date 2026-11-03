@@ -10,34 +10,49 @@ function init() {
   const FOV = 50, CAM_Z = 18, SPACING = 1.1;
 
   // --- Cluster layout ------------------------------------------------------
-  // Several lattices instead of one big one centered on the text.
-  // Each cluster is anchored to a screen position in NDC coordinates
-  // (x: -1 left .. +1 right, y: -1 bottom .. +1 top) chosen to steer
-  // clear of the middle text column, and has its own size, color,
-  // idle spin, and ripple so they all move independently. Tune to taste.
+  // Anchor the clusters in separate corners of the viewport. NDC coordinates
+  // run from -1 to +1 on each axis; the center stays clear for the hero copy.
   const LAYOUT = isMobile
     ? [{
-        ndc: [0.42, 0.18], n: 7, color: 0x22d3ee,
+        ndc: [0.98, 0.34], n: 5, color: 0x22d3ee,
         spinAxis: [0.3, 1, 0.2], spinSpeed: 0.10,
         waveFreq: 0.7, waveAmp: 0.20, waveSpeed: 1.8,
+      }, {
+        ndc: [-0.92, -0.78], n: 3, color: 0xf472b6,
+        spinAxis: [1, 0.2, 0], spinSpeed: -0.08,
+        waveFreq: 1.1, waveAmp: 0.15, waveSpeed: 1.6,
       }]
     : [
         {
-          ndc: [0.56,  0.28], n: 6, color: 0x22d3ee,
+          ndc: [0.63, 0.44], n: 6, color: 0x22d3ee,
           spinAxis: [0, 1, 0], spinSpeed: 0.15,
           waveFreq: 0.8, waveAmp: 0.18, waveSpeed: 2.0,
         },
         {
-          ndc: [ 0.76, -0.22], n: 7, color: 0xf472b6,
+          ndc: [0.70, -0.62], n: 5, color: 0xf472b6,
           spinAxis: [1, 0, 0], spinSpeed: -0.11,
           waveFreq: 1.1, waveAmp: 0.15, waveSpeed: 1.6,
         },
         {
-          ndc: [0.30, -0.54], n: 4, color: 0x22d3ee,
+          ndc: [-0.84, -0.64], n: 4, color: 0x22d3ee,
           spinAxis: [0.4, 0.8, 0.3], spinSpeed: 0.18,
           waveFreq: 0.6, waveAmp: 0.22, waveSpeed: 2.4,
         },
       ];
+
+  // PointsMaterial draws square pixels by default. A circular alpha sprite
+  // keeps the depth and motion of the lattice without the blocky node edges.
+  const dot = document.createElement('canvas');
+  dot.width = dot.height = 64;
+  const ctx = dot.getContext('2d');
+  const glow = ctx.createRadialGradient(32, 32, 3, 32, 32, 31);
+  glow.addColorStop(0, 'rgba(255,255,255,1)');
+  glow.addColorStop(0.48, 'rgba(255,255,255,0.95)');
+  glow.addColorStop(0.78, 'rgba(255,255,255,0.35)');
+  glow.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, 64, 64);
+  const dotTexture = new THREE.CanvasTexture(dot);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(FOV, innerWidth / innerHeight, 0.1, 100);
@@ -83,8 +98,9 @@ function init() {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     const mat = new THREE.PointsMaterial({
-      color: spec.color, size: 0.18, transparent: true, opacity: 0.9,
-      sizeAttenuation: true,
+      color: spec.color, size: 0.28, map: dotTexture,
+      transparent: true, opacity: 0.85, alphaTest: 0.03,
+      depthWrite: false, sizeAttenuation: true,
     });
     const points = new THREE.Points(geo, mat);
     points.position.set(...ndcToWorld(spec.ndc));

@@ -136,10 +136,17 @@ async function main() {
 
   // --- about ---
   const aboutContent = `
-  <section class="page">
+  <section class="page about-page">
     <p class="eyebrow page-kicker">The person behind the work <span class="section-index">/ About</span></p>
-    <h1 class="page-title reveal">About</h1>
-    <div class="prose reveal">${renderMarkdown(aboutBody)}</div>
+    <div class="about-header">
+      <div class="about-header-copy">
+        <h1 class="page-title reveal">About</h1>
+        <p class="about-lede reveal">${escapeHtml(site.aboutPreview)}</p>
+        <a class="text-link reveal" href="https://www.linkedin.com/in/pierre-antoine-denari%C3%A9/">View my LinkedIn <span aria-hidden="true">↗</span></a>
+      </div>
+      <figure class="about-portrait"><img src="/assets/profile.jpg" alt="Portrait of Pierre-Antoine Denarié" width="800" height="800" decoding="async"><figcaption>Pierre-Antoine Denarié <span>/ Delft, NL</span></figcaption></figure>
+    </div>
+    <div class="prose about-body reveal">${renderMarkdown(aboutBody)}</div>
   </section>`;
   await writeFile(join(dist, 'about.html'), fill(layout, {
     TITLE: `About — ${escapeHtml(site.name)}`,

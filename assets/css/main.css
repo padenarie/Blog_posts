@@ -209,13 +209,25 @@ body[data-page="home"] main, body[data-page="demo"] main { max-width: 1320px; }
 /* ============ post page ============ */
 .post-hero { height: 32vh; border-radius: var(--radius); margin-bottom: 28px; }
 .post-title, .page-title { font-family: var(--sans); font-size: clamp(2.4rem, 5vw, 4.2rem); line-height: 1.05; margin: 0 0 28px; letter-spacing: -0.055em; }
+body[data-page="about"] main { max-width: 1120px; }
 body[data-page="about"] .page, body[data-page="demo"] .page { padding-top: clamp(36px, 6vw, 80px); }
 body[data-page="about"] .prose { font-size: 1.13rem; line-height: 1.8; }
 body[data-page="demo"] .page > .prose { max-width: 68ch; font-size: 1.15rem; }
 body[data-page="demo"] #demo-container { margin-top: 40px; }
 .page-kicker { display: flex; justify-content: space-between; max-width: 70ch; padding-bottom: 18px; border-bottom: 1px solid var(--border); margin-bottom: clamp(34px, 6vw, 72px); }
-body[data-page="about"] .page-title { margin-bottom: 44px; }
+body[data-page="about"] .page-title { font-size: clamp(4rem, 7vw, 7rem); margin-bottom: 24px; }
 body[data-page="about"] .prose > p:first-child { font-size: 1.35rem; color: var(--text); line-height: 1.6; }
+.about-header { display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, 330px); gap: clamp(32px, 7vw, 100px); align-items: center; margin-bottom: clamp(72px, 9vw, 130px); }
+.about-header-copy { max-width: 60ch; }
+.about-lede { max-width: 48ch; font-size: clamp(1.25rem, 2.2vw, 1.65rem); line-height: 1.5; letter-spacing: -.025em; margin: 0 0 30px; }
+.about-portrait { margin: 0; }
+.about-portrait img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border: 1px solid var(--border); border-radius: 6px; }
+.about-portrait figcaption { display: flex; justify-content: space-between; gap: 14px; padding-top: 12px; color: var(--text-muted); font: .67rem var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.about-body { max-width: 72ch; }
+.about-body h2 { font-family: var(--sans); font-size: clamp(1.65rem, 3vw, 2.25rem); line-height: 1.2; letter-spacing: -.04em; padding-top: 26px; border-top: 1px solid var(--border); margin-top: 3.5rem; }
+.about-body ul { padding-left: 1.35em; }
+.about-body li + li { margin-top: .85em; }
+@media (max-width: 719px) { .about-header { grid-template-columns: 1fr; gap: 44px; } .about-portrait { max-width: 320px; } .about-body h2 { margin-top: 2.7rem; } }
 .demo-page .page-title { max-width: 15ch; font-size: clamp(3.1rem, 6.6vw, 6.5rem); }
 .demo-intro { max-width: 64ch; color: var(--text-muted); line-height: 1.7; }
 .demo-launch-panel { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 24px; margin-top: 56px; padding: clamp(24px, 4vw, 42px); border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-elevated); }

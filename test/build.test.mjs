@@ -17,6 +17,7 @@ test('build produces the expected dist/ structure', async () => {
     'dist/index.html', 'dist/about.html', 'dist/404.html',
     'dist/demo.html',
     'dist/assets/ica-signals.svg',
+    'dist/assets/profile.jpg',
     'dist/assets/css/main.css', 'dist/assets/js/main.js',
     'dist/assets/js/vendor/three.module.js',
   ];
@@ -32,6 +33,12 @@ test('build produces the expected dist/ structure', async () => {
   const demo = await readFile(join(root, 'dist/demo.html'), 'utf8');
   assert.match(demo, /Launch interactive demo/);
   assert.doesNotMatch(demo, /<iframe[^>]+src=/);
+  const about = await readFile(join(root, 'dist/about.html'), 'utf8');
+  assert.match(about, /src="\/assets\/profile.jpg"/);
+  assert.match(about, /Engineering roots/);
+  assert.match(about, /Things I’ve built/);
+  assert.match(about, /Credentials and beyond/);
+  assert.match(about, /linkedin.com\/in\/pierre-antoine-denari/);
 });
 
 test('special characters in titles are escaped (Review Focus #2)', async () => {
