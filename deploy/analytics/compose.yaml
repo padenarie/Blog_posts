@@ -7,9 +7,10 @@ services:
         UMAMI_SCRIPT_URL: ${UMAMI_SCRIPT_URL:-}
         UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID:-}
     expose: ["80"]
+    environment:
+      TRUSTED_PROXY_IP: ${TRUSTED_PROXY_IP:-}
     volumes:
       - request_logs:/var/log/nginx/analytics
-      - ./real-ip:/etc/nginx/real-ip:ro
     healthcheck:
       test: ["CMD", "nginx", "-t"]
       interval: 30s
@@ -91,9 +92,21 @@ services:
 
   report-gateway:
     image: nginx:alpine@sha256:62ff2089abf5a9ed33bd232895bef5e22f7bb4b200675cec49a5ebc48e3d4ac8
+    environment:
+      REPORT_HTPASSWD: ${REPORT_HTPASSWD:?set REPORT_HTPASSWD}
     volumes:
       - ./report-gateway.conf:/etc/nginx/conf.d/default.conf:ro
-    secrets: [report_htpasswd]
+    tmpfs:
+      - /run/secrets:mode=0700,size=64k
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        umask 077
+        printf '%s\n' "$$REPORT_HTPASSWD" > /run/secrets/report_htpasswd
+        chown nginx:nginx /run/secrets /run/secrets/report_htpasswd
+        unset REPORT_HTPASSWD
+        exec nginx -g 'daemon off;'
     expose: ["80"]
     healthcheck:
       test: ["CMD", "nginx", "-t"]
@@ -111,7 +124,3 @@ volumes:
 
 networks:
   analytics:
-
-secrets:
-  report_htpasswd:
-    file: ./secrets/report.htpasswd

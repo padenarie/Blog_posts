@@ -16,6 +16,7 @@ RUN apk add --no-cache logrotate && mkdir -p /var/log/nginx/analytics /etc/nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY deploy/analytics/logrotate.conf /etc/logrotate.d/blog-analytics
 COPY deploy/analytics/start-crond.sh /docker-entrypoint.d/40-start-crond.sh
-RUN chmod +x /docker-entrypoint.d/40-start-crond.sh
+COPY deploy/analytics/configure-real-ip.sh /docker-entrypoint.d/30-configure-real-ip.sh
+RUN chmod +x /docker-entrypoint.d/30-configure-real-ip.sh /docker-entrypoint.d/40-start-crond.sh
 COPY --from=build /app/dist /usr/share/nginx/html
 EXPOSE 80
