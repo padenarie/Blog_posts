@@ -14,13 +14,14 @@ const build = (env) => new Promise((resolve, reject) => execFile('node', ['src/b
 
 test('analytics is omitted without both public values', () => {
   assert.equal(readAnalyticsConfig({}), null);
+  assert.equal(readAnalyticsConfig({ UMAMI_SCRIPT_URL: valid.UMAMI_SCRIPT_URL }), null);
   assert.equal(renderAnalyticsTags(null), '');
 });
 
 test('analytics validates URL and website ID', () => {
   assert.match(renderAnalyticsTags(readAnalyticsConfig(valid)), /data-website-id="123e4567/);
   for (const env of [
-    { UMAMI_SCRIPT_URL: valid.UMAMI_SCRIPT_URL },
+    { UMAMI_WEBSITE_ID: valid.UMAMI_WEBSITE_ID },
     { ...valid, UMAMI_SCRIPT_URL: 'http://analytics.example.test/script.js' },
     { ...valid, UMAMI_SCRIPT_URL: 'https://analytics.example.test/script.js?token=secret' },
     { ...valid, UMAMI_WEBSITE_ID: 'wrong' },
@@ -39,8 +40,10 @@ test('build emits tracking only when configured and preserves dist on invalid co
       assert.equal((page.match(/data-website-id=/g) || []).length, 1, path);
       assert.doesNotMatch(page, /secret-do-not-emit|database-do-not-emit/);
     }
-    await assert.rejects(build({ UMAMI_SCRIPT_URL: valid.UMAMI_SCRIPT_URL }));
-    assert.match(await readFile(join(root, 'dist/index.html'), 'utf8'), /data-website-id/);
+    await build({ UMAMI_SCRIPT_URL: valid.UMAMI_SCRIPT_URL });
+    assert.doesNotMatch(await readFile(join(root, 'dist/index.html'), 'utf8'), /data-website-id/);
+    await assert.rejects(build({ UMAMI_WEBSITE_ID: valid.UMAMI_WEBSITE_ID }));
+    assert.doesNotMatch(await readFile(join(root, 'dist/index.html'), 'utf8'), /data-website-id/);
   } finally {
     await rm(fixture, { force: true });
     await build({});

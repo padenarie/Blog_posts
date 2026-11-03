@@ -4,8 +4,8 @@ const escapeAttr = (value) => String(value).replace(/[&<>"']/g, (c) =>
 export function readAnalyticsConfig(env = process.env) {
   const scriptUrl = env.UMAMI_SCRIPT_URL?.trim() || '';
   const websiteId = env.UMAMI_WEBSITE_ID?.trim() || '';
-  if (!scriptUrl && !websiteId) return null;
-  if (!scriptUrl || !websiteId) throw new Error('Both UMAMI_SCRIPT_URL and UMAMI_WEBSITE_ID are required');
+  if (!websiteId) return null;
+  if (!scriptUrl) throw new Error('UMAMI_SCRIPT_URL is required when UMAMI_WEBSITE_ID is set');
   let url;
   try { url = new URL(scriptUrl); } catch { throw new Error('UMAMI_SCRIPT_URL must be a valid HTTPS script URL'); }
   if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash ||
