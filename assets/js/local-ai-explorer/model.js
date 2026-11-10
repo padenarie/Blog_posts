@@ -44,14 +44,20 @@ export function sizeBinSeries(sizeBins, { period = 'all' } = {}) {
   };
 }
 
+const scored = (prompts, opts) => filterPrompts(prompts, opts).filter((p) => p.score !== null);
+
 export function scatterSeries(prompts, { period = 'all', routes = ROUTES } = {}) {
-  const kept = filterPrompts(prompts, { period, routes }).filter((p) => p.score !== null);
+  // log x-axis cannot show 0 tokens; those prompts lack a recorded size and are left out
+  const kept = scored(prompts, { period, routes }).filter((p) => p.input_tokens > 0);
   return ROUTES.filter((r) => routes.includes(r)).map((name) => ({
     name,
-    // log x-axis cannot show 0 tokens
     data: kept.filter((p) => p.route === name)
-      .map((p) => ({ value: [Math.max(1, p.input_tokens), p.score], prompt: p })),
+      .map((p) => ({ value: [p.input_tokens, p.score], prompt: p })),
   }));
+}
+
+export function unplottedCount(prompts, opts = {}) {
+  return scored(prompts, opts).filter((p) => !(p.input_tokens > 0)).length;
 }
 
 export function tooltipLines(p) {

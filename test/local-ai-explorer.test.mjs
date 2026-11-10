@@ -5,6 +5,7 @@ import { access, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
   ROUTES, filterPrompts, dailySeries, sizeBinSeries, scatterSeries, tooltipLines, coverageText,
+  unplottedCount,
 } from '../assets/js/local-ai-explorer/model.js';
 
 const P = (o) => ({ period: 'hybrid', route: 'local', input_tokens: 10, agent_depth: 1,
@@ -44,12 +45,22 @@ test('sizeBinSeries sums periods when period is all', () => {
   assert.deepEqual(sizeBinSeries(bins, { period: 'local_only' }).series[0].data, [1, 0, 0, 0]);
 });
 
-test('scatterSeries drops unscored prompts and clamps x for the log axis', () => {
+test('scatterSeries drops unscored prompts and prompts without a recorded size', () => {
   const s = scatterSeries([P({ input_tokens: 0 }), P({ score: null }), P({ route: 'cloud' })], {});
   assert.deepEqual(s.map((x) => x.name), ['local', 'cloud', 'mixed']);
-  assert.deepEqual(s[0].data.map((d) => d.value), [[1, 1.5]]);
-  assert.equal(s[1].data.length, 1);
+  assert.deepEqual(s[0].data, []);
+  assert.deepEqual(s[1].data.map((d) => d.value), [[10, 1.5]]);
   assert.equal(s[2].data.length, 0);
+});
+
+test('unplottedCount counts scored, filtered prompts without a recorded size', () => {
+  const ps = [P({ input_tokens: 0 }), P({ input_tokens: -1, route: 'cloud' }),
+    P({ input_tokens: 0, score: null }), P({ input_tokens: 0, period: 'local_only' }), P({})];
+  assert.equal(unplottedCount(ps), 3);
+  assert.equal(unplottedCount(ps, {}), 3);
+  assert.equal(unplottedCount(ps, { period: 'hybrid' }), 2);
+  assert.equal(unplottedCount(ps, { routes: ['cloud'] }), 1);
+  assert.equal(unplottedCount([P({})], {}), 0);
 });
 
 test('tooltipLines lists raw components and never reasoning tokens', () => {
