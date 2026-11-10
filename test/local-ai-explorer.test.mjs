@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import {
   dailySeries, sizeBinSeries, coverageText,
   callPoints, logRange, callTooltipLines, callCoverageText, PANELS, CALL_DEPLOYMENTS,
+  SYMBOLS, resolveView, excludedCallsText, unbinnedText,
 } from '../assets/js/local-ai-explorer/model.js';
 
 const PR = (o) => ({ period: 'hybrid', route: 'local', input_tokens: 10, agent_depth: 2,
@@ -73,7 +74,52 @@ test('coverageText', () => {
     '1,400 of 1,479 prompts have every score component.');
 });
 
+test('excludedCallsText reports disabled corrections with separators', () => {
+  assert.equal(excludedCallsText(754),
+    '754 cloud calls during Jul 9–31 that were not part of the experiment are excluded.');
+  assert.equal(excludedCallsText(1234),
+    '1,234 cloud calls during Jul 9–31 that were not part of the experiment are excluded.');
+});
+
+test('unbinnedText reports calls without recorded input tokens', () => {
+  assert.equal(unbinnedText(44), '44 calls without recorded input tokens are not binned.');
+  assert.equal(unbinnedText(1500), '1,500 calls without recorded input tokens are not binned.');
+});
+
+test('each call deployment has a distinct symbol', () => {
+  assert.deepEqual(SYMBOLS, { local: 'circle', cloud: 'triangle', copilot: 'diamond' });
+  assert.deepEqual(CALL_DEPLOYMENTS.map((d) => SYMBOLS[d]), ['circle', 'triangle', 'diamond']);
+});
+
+test('resolveView accepts known views and falls back to daily', () => {
+  const ids = ['daily', 'sizes', 'trajectory'];
+  assert.equal(resolveView('trajectory', ids), 'trajectory');
+  assert.equal(resolveView('sizes', ids), 'sizes');
+  assert.equal(resolveView('bogus', ids), 'daily');
+  assert.equal(resolveView(undefined, ids), 'daily');
+  assert.equal(resolveView('toString', ids), 'daily');
+});
+
 const root = join(import.meta.dirname, '..');
+
+test('figure registration shows a visible error when the explorer module fails to load', async () => {
+  const src = await readFile(join(root, 'assets/js/figures.js'), 'utf8');
+  const block = src.slice(src.indexOf("registerFigure('local-ai-explorer'"));
+  const reg = block.slice(0, block.indexOf('\n});') + 4);
+  assert.match(reg, /try\s*\{[\s\S]*import\('\/assets\/js\/local-ai-explorer\/explorer\.js'\)[\s\S]*\}\s*catch/);
+  assert.match(reg, /console\.error/);
+  assert.match(reg, /explorer-error/);
+  assert.match(reg, /role['"]?\s*[,:]\s*'status'|setAttribute\('role', 'status'\)/);
+  assert.match(reg, /The usage explorer could not load\./);
+});
+
+test('explorer uses deployment symbols and validates cfg.view', async () => {
+  const src = await readFile(join(root, 'assets/js/local-ai-explorer/explorer.js'), 'utf8');
+  assert.match(src, /symbol: SYMBOLS\[dep\]/);
+  assert.match(src, /resolveView\(cfg\.view/);
+  assert.match(src, /excludedCallsText\(data\.provenance\.disabled_corrections\)/);
+  assert.match(src, /unbinnedText\(data\.coverage\.size_bins_unknown\)/);
+});
 
 test('build ships explorer module, data snapshot, and figure registration', async () => {
   await new Promise((res, rej) => execFile('node', ['src/build.mjs'], { cwd: root },

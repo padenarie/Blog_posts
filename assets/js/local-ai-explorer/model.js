@@ -77,3 +77,17 @@ export function callCoverageText({ plotted, zero_tokens: zero, no_score: noScore
 export function coverageText({ prompts, scored }) {
   return `${fmt(scored)} of ${fmt(prompts)} prompts have every score component.`;
 }
+
+export const SYMBOLS = { local: 'circle', cloud: 'triangle', copilot: 'diamond' };
+
+export function resolveView(view, ids) {
+  return ids.includes(view) ? view : 'daily';
+}
+
+export function excludedCallsText(disabled) {
+  return `${fmt(disabled)} cloud calls during Jul 9–31 that were not part of the experiment are excluded.`;
+}
+
+export function unbinnedText(unknown) {
+  return `${fmt(unknown)} calls without recorded input tokens are not binned.`;
+}

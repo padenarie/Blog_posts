@@ -66,8 +66,18 @@ registerFigure('tensor-wave', async (el, cfg = {}) => {
 
 // --- local-ai-explorer: Token Economy snapshot charts (ECharts, lazy) ---
 registerFigure('local-ai-explorer', async (el, cfg = {}) => {
-  const { mountLocalAiExplorer } = await import('/assets/js/local-ai-explorer/explorer.js');
-  await mountLocalAiExplorer(el, cfg);
+  try {
+    const { mountLocalAiExplorer } = await import('/assets/js/local-ai-explorer/explorer.js');
+    await mountLocalAiExplorer(el, cfg);
+  } catch (err) {
+    console.error('local-ai-explorer:', err);
+    const msg = document.createElement('p');
+    msg.className = 'explorer-error';
+    msg.setAttribute('role', 'status');
+    msg.textContent = 'The usage explorer could not load.';
+    el.classList.add('fig--explorer');
+    el.replaceChildren(msg);
+  }
 });
 
 function initAll() {

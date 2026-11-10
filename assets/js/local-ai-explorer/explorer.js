@@ -2,6 +2,7 @@
 import {
   COLORS, CALL_DEPLOYMENTS, PANELS, dailySeries, sizeBinSeries, coverageText,
   callPoints, logRange, callTooltipLines, callCoverageText,
+  SYMBOLS, resolveView, excludedCallsText, unbinnedText,
 } from './model.js';
 
 const VIEWS = [
@@ -99,7 +100,7 @@ function trajectoryOption(t, points, xRange, yRange) {
     yAxis: grids.map((_, i) => axis(t, { type: 'log', logBase: 2, gridIndex: i, ...yRange, name: 'trajectory score' })),
     // series share names across panels so one legend click toggles a deployment in both
     series: PANELS.flatMap(([period], i) => CALL_DEPLOYMENTS.map((dep) => ({
-      name: dep, type: 'scatter', xAxisIndex: i, yAxisIndex: i, symbolSize: 5,
+      name: dep, type: 'scatter', xAxisIndex: i, yAxisIndex: i, symbol: SYMBOLS[dep], symbolSize: 6,
       itemStyle: { color: COLORS[dep], opacity: 0.6 }, data: points[period][dep],
     }))),
   };
@@ -135,7 +136,7 @@ async function mount(root, cfg) {
   const all = Object.values(points).flatMap((byDep) => Object.values(byDep).flat());
   const xRange = logRange(all.map((p) => p.tokens));
   const yRange = logRange(all.map((p) => p.value[1]), 2);
-  const initial = { view: cfg.view || 'daily', period: 'all' };
+  const initial = { view: resolveView(cfg.view, VIEWS.map(([id]) => id)), period: 'all' };
   const state = structuredClone(initial);
 
   root.classList.add('fig--explorer');
@@ -174,8 +175,10 @@ async function mount(root, cfg) {
       : state.view === 'sizes' ? sizesOption(data, state, t)
         : trajectoryOption(t, points, xRange, yRange);
     chart.setOption(option, true);
-    const shown = state.view === 'trajectory' ? ` ${callCoverageText(data.coverage.calls)}` : '';
+    const shown = state.view === 'trajectory' ? ` ${callCoverageText(data.coverage.calls)}`
+      : state.view === 'sizes' ? ` ${unbinnedText(data.coverage.size_bins_unknown)}` : '';
     note.textContent = `Data through ${data.data_through} (UTC days), with manual corrections applied. `
+      + `${excludedCallsText(data.provenance.disabled_corrections)} `
       + '“copilot” is Copilot’s built-in helper model, not a chosen coding model. '
       + `Score = ${data.score.formula}; reasoning and output tokens are excluded. `
       + `Agent depth is a lower bound for very long runs; tool calls are linked heuristically; `
