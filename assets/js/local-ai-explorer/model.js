@@ -14,7 +14,15 @@ export function filterPrompts(prompts, { period = 'all', routes = ROUTES } = {})
 }
 
 export function dailySeries(dailyCalls) {
-  const days = [...new Set(dailyCalls.map((d) => d.day))].sort();
+  const presentDays = [...new Set(dailyCalls.map((d) => d.day))].sort();
+  const days = [];
+  if (presentDays.length) {
+    const end = Date.parse(`${presentDays[presentDays.length - 1]}T00:00:00Z`);
+    // walk every UTC calendar day so gaps are not collapsed on a category axis
+    for (let t = Date.parse(`${presentDays[0]}T00:00:00Z`); t <= end; t += 86400000) {
+      days.push(new Date(t).toISOString().slice(0, 10));
+    }
+  }
   const index = new Map(dailyCalls.map((d) => [`${d.day}|${d.deployment}`, d.calls]));
   const present = DEPLOYMENTS.filter((dep) => dailyCalls.some((d) => d.deployment === dep));
   return {

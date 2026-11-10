@@ -17,14 +17,15 @@ test('filterPrompts by period and route', () => {
 
 test('dailySeries fills missing days with zero and orders deployments', () => {
   const r = dailySeries([
-    { day: '2026-07-10', deployment: 'cloud', calls: 2 },
+    { day: '2026-07-11', deployment: 'cloud', calls: 2 },
     { day: '2026-07-09', deployment: 'local', calls: 5 },
   ]);
-  assert.deepEqual(r.days, ['2026-07-09', '2026-07-10']);
+  assert.deepEqual(r.days, ['2026-07-09', '2026-07-10', '2026-07-11']);
   assert.deepEqual(r.series, [
-    { name: 'local', data: [5, 0] },
-    { name: 'cloud', data: [0, 2] },
+    { name: 'local', data: [5, 0, 0] },
+    { name: 'cloud', data: [0, 0, 2] },
   ]);
+  assert.deepEqual(dailySeries([]), { days: [], series: [] });
 });
 
 test('sizeBinSeries sums periods when period is all', () => {
