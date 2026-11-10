@@ -4,20 +4,12 @@ import { execFile } from 'node:child_process';
 import { access, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
-  ROUTES, filterPrompts, dailySeries, sizeBinSeries, scatterSeries, tooltipLines, coverageText,
-  unplottedCount,
+  dailySeries, sizeBinSeries, coverageText,
+  callPoints, logRange, callTooltipLines, callCoverageText, PANELS, CALL_DEPLOYMENTS,
 } from '../assets/js/local-ai-explorer/model.js';
 
-const P = (o) => ({ period: 'hybrid', route: 'local', input_tokens: 10, agent_depth: 1,
-  prompt_position: 1, tool_calls: 0, subagent_runs: 0, score: 1.5, ...o });
-
-test('filterPrompts by period and route', () => {
-  const ps = [P({}), P({ period: 'local_only' }), P({ route: 'mixed' })];
-  assert.equal(filterPrompts(ps).length, 3);
-  assert.equal(filterPrompts(ps, { period: 'local_only' }).length, 1);
-  assert.deepEqual(filterPrompts(ps, { routes: ['mixed'] }).map((p) => p.route), ['mixed']);
-  assert.deepEqual(ROUTES, ['local', 'cloud', 'mixed']);
-});
+const PR = (o) => ({ period: 'hybrid', route: 'local', input_tokens: 10, agent_depth: 2,
+  prompt_position: 3, tool_calls: 4, subagent_runs: 1, score: 3.5, ...o });
 
 test('dailySeries fills missing days with zero and orders deployments', () => {
   const r = dailySeries([
@@ -45,32 +37,35 @@ test('sizeBinSeries sums periods when period is all', () => {
   assert.deepEqual(sizeBinSeries(bins, { period: 'local_only' }).series[0].data, [1, 0, 0, 0]);
 });
 
-test('scatterSeries drops unscored prompts and prompts without a recorded size', () => {
-  const s = scatterSeries([P({ input_tokens: 0 }), P({ score: null }), P({ route: 'cloud' })], {});
-  assert.deepEqual(s.map((x) => x.name), ['local', 'cloud', 'mixed']);
-  assert.deepEqual(s[0].data, []);
-  assert.deepEqual(s[1].data.map((d) => d.value), [[10, 1.5]]);
-  assert.equal(s[2].data.length, 0);
+test('callPoints groups calls by panel and deployment with prompt score as y', () => {
+  const data = { prompts: [PR({}), PR({ score: 6 })],
+    calls: [['hybrid', 'cloud', 90000, 1], ['local_only', 'local', 300, 0], ['hybrid', 'copilot', 1600, 0]] };
+  const pts = callPoints(data);
+  assert.deepEqual(Object.keys(pts), PANELS.map(([p]) => p));
+  assert.deepEqual(Object.keys(pts.hybrid), CALL_DEPLOYMENTS);
+  assert.deepEqual(pts.hybrid.cloud.map((p) => p.value), [[90000, 6]]);
+  assert.deepEqual(pts.local_only.local.map((p) => p.value), [[300, 3.5]]);
+  assert.equal(pts.hybrid.copilot[0].prompt, data.prompts[0]);
+  assert.deepEqual(pts.local_only.cloud, []);
 });
 
-test('unplottedCount counts scored, filtered prompts without a recorded size', () => {
-  const ps = [P({ input_tokens: 0 }), P({ input_tokens: -1, route: 'cloud' }),
-    P({ input_tokens: 0, score: null }), P({ input_tokens: 0, period: 'local_only' }), P({})];
-  assert.equal(unplottedCount(ps), 3);
-  assert.equal(unplottedCount(ps, {}), 3);
-  assert.equal(unplottedCount(ps, { period: 'hybrid' }), 2);
-  assert.equal(unplottedCount(ps, { routes: ['cloud'] }), 1);
-  assert.equal(unplottedCount([P({})], {}), 0);
+test('logRange brackets values with powers of the base', () => {
+  assert.deepEqual(logRange([250, 380000]), { min: 100, max: 1000000 });
+  assert.deepEqual(logRange([1.39, 11.2], 2), { min: 1, max: 16 });
 });
 
-test('tooltipLines lists raw components and never reasoning tokens', () => {
-  const lines = tooltipLines(P({ input_tokens: 12345, agent_depth: 7, prompt_position: 3,
-    tool_calls: 9, subagent_runs: 1, score: 6.789 }));
+test('callTooltipLines describes the call and its prompt, never reasoning tokens', () => {
+  const lines = callTooltipLines(12345, PR({ score: 6.789, tool_calls: 1, subagent_runs: 0 }));
   assert.deepEqual(lines, [
-    '12,345 initial input tokens', 'Trajectory score 6.79', 'Agent depth 7',
-    'Prompt 3 in its chat session', '9 linked tool calls', '1 subagent run',
+    '12,345 input tokens in this call', 'Prompt trajectory score 6.79', 'Agent depth 2',
+    'Prompt 3 in its chat session', '1 linked tool call', '0 subagent runs',
   ]);
   assert.ok(!lines.join(' ').toLowerCase().includes('reasoning'));
+});
+
+test('callCoverageText', () => {
+  assert.equal(callCoverageText({ plotted: 6288, zero_tokens: 44, no_score: 249 }),
+    '6,288 calls plotted; 44 without recorded input tokens and 249 without a scored prompt are omitted.');
 });
 
 test('coverageText', () => {

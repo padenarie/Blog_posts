@@ -1,7 +1,7 @@
 // explorer.js — DOM + ECharts wiring for the local-ai-explorer figure.
 import {
-  ROUTES, COLORS, filterPrompts, dailySeries, sizeBinSeries, scatterSeries, tooltipLines, coverageText,
-  unplottedCount,
+  COLORS, CALL_DEPLOYMENTS, PANELS, dailySeries, sizeBinSeries, coverageText,
+  callPoints, logRange, callTooltipLines, callCoverageText,
 } from './model.js';
 
 const VIEWS = [
@@ -85,17 +85,23 @@ function sizesOption(data, state, t) {
   };
 }
 
-function trajectoryOption(data, state, t) {
+function trajectoryOption(t, points, xRange, yRange) {
+  const grids = [{ left: 64, right: 24, top: 56, height: '36%' }, { left: 64, right: 24, top: '58%', height: '36%' }];
   return {
     aria: { enabled: true },
-    tooltip: { trigger: 'item', formatter: (p) => tooltipLines(p.data.prompt).join('<br>') },
-    legend: { textStyle: { color: t.text }, top: 0 },
-    grid: { left: 56, right: 16, top: 36, bottom: 48 },
-    xAxis: axis(t, { type: 'log', name: 'initial prompt input tokens', nameLocation: 'middle', nameGap: 30 }),
-    yAxis: axis(t, { type: 'value', name: 'trajectory score' }),
-    series: scatterSeries(data.prompts, state).map((s) => ({
-      ...s, type: 'scatter', symbolSize: 7, itemStyle: { color: COLORS[s.name], opacity: 0.7 },
-    })),
+    tooltip: { trigger: 'item', formatter: (p) => callTooltipLines(p.data.tokens, p.data.prompt).join('<br>') },
+    legend: { textStyle: { color: t.text }, top: 0, data: CALL_DEPLOYMENTS },
+    title: PANELS.map(([, label], i) => ({ text: label, left: 'center', top: i === 0 ? 30 : '53%',
+      textStyle: { color: t.text, fontSize: 13, fontWeight: 'normal' } })),
+    grid: grids,
+    xAxis: grids.map((_, i) => axis(t, { type: 'log', gridIndex: i, ...xRange,
+      ...(i === 1 ? { name: 'input tokens per call', nameLocation: 'middle', nameGap: 28 } : {}) })),
+    yAxis: grids.map((_, i) => axis(t, { type: 'log', logBase: 2, gridIndex: i, ...yRange, name: 'trajectory score' })),
+    // series share names across panels so one legend click toggles a deployment in both
+    series: PANELS.flatMap(([period], i) => CALL_DEPLOYMENTS.map((dep) => ({
+      name: dep, type: 'scatter', xAxisIndex: i, yAxisIndex: i, symbolSize: 5,
+      itemStyle: { color: COLORS[dep], opacity: 0.6 }, data: points[period][dep],
+    }))),
   };
 }
 
@@ -125,8 +131,11 @@ async function mount(root, cfg) {
       return r.json();
     }),
   ]);
-  const routes = ROUTES.filter((r) => data.prompts.some((p) => p.route === r));
-  const initial = { view: cfg.view || 'daily', period: 'all', routes: [...routes] };
+  const points = callPoints(data);
+  const all = Object.values(points).flatMap((byDep) => Object.values(byDep).flat());
+  const xRange = logRange(all.map((p) => p.tokens));
+  const yRange = logRange(all.map((p) => p.value[1]), 2);
+  const initial = { view: cfg.view || 'daily', period: 'all' };
   const state = structuredClone(initial);
 
   root.classList.add('fig--explorer');
@@ -140,27 +149,13 @@ async function mount(root, cfg) {
   const period = el('select', { 'aria-label': 'Period' });
   PERIODS.forEach(([id, label]) => period.append(el('option', { value: id }, label)));
   period.addEventListener('change', () => { state.period = period.value; render(); });
-  const routeBoxes = routes.map((r) => {
-    const label = el('label', { class: 'explorer-route' });
-    const box = el('input', { type: 'checkbox', value: r });
-    box.checked = true;
-    box.addEventListener('change', () => {
-      state.routes = routeBoxes.filter(([, b]) => b.checked).map(([id]) => id);
-      render();
-    });
-    label.append(box, ` ${r}`);
-    return [r, box, label];
-  });
   const reset = el('button', { type: 'button', class: 'explorer-reset' }, 'Reset');
   reset.addEventListener('click', () => {
     Object.assign(state, structuredClone(initial));
     period.value = 'all';
-    routeBoxes.forEach(([, b]) => { b.checked = true; });
     render();
   });
-  const routesGroup = el('span', { class: 'explorer-routes', role: 'group', 'aria-label': 'Routes' });
-  routesGroup.append(...routeBoxes.map(([, , l]) => l));
-  controls.append(...viewButtons, period, routesGroup, reset);
+  controls.append(...viewButtons, period, reset);
 
   const chartEl = el('div', { class: 'explorer-chart' });
   const note = el('p', { class: 'explorer-note' });
@@ -172,20 +167,14 @@ async function mount(root, cfg) {
   function render() {
     const t = theme();
     viewButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === state.view)));
-    period.disabled = state.view === 'daily';
-    routesGroup.hidden = state.view !== 'trajectory';
+    period.disabled = state.view !== 'sizes';
+    chartEl.style.height = state.view === 'trajectory' ? '640px' : '';
+    chart.resize();
     const option = state.view === 'daily' ? dailyOption(data, t)
       : state.view === 'sizes' ? sizesOption(data, state, t)
-        : trajectoryOption(data, state, t);
+        : trajectoryOption(t, points, xRange, yRange);
     chart.setOption(option, true);
-    let shown = '';
-    if (state.view === 'trajectory') {
-      const missing = unplottedCount(data.prompts, state);
-      const plotted = filterPrompts(data.prompts, state).filter((p) => p.score !== null).length - missing;
-      shown = ` Showing ${plotted} prompts.` + (missing > 0
-        ? ` ${missing} prompt${missing === 1 ? '' : 's'} without a recorded prompt size `
-          + `${missing === 1 ? 'is' : 'are'} not plotted.` : '');
-    }
+    const shown = state.view === 'trajectory' ? ` ${callCoverageText(data.coverage.calls)}` : '';
     note.textContent = `Data through ${data.data_through} (UTC days), with manual corrections applied. `
       + '“copilot” is Copilot’s built-in helper model, not a chosen coding model. '
       + `Score = ${data.score.formula}; reasoning and output tokens are excluded. `

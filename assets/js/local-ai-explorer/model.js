@@ -1,5 +1,4 @@
 // model.js — pure data shaping for the local-ai-explorer figure (no DOM).
-export const ROUTES = ['local', 'cloud', 'mixed'];
 export const DEPLOYMENTS = ['local', 'cloud', 'copilot', 'other'];
 export const BIN_LABELS = ['<1k', '1–10k', '10–100k', '100k+'];
 export const COLORS = {
@@ -8,10 +7,6 @@ export const COLORS = {
 
 const fmt = (n) => n.toLocaleString('en-US');
 const inPeriod = (period) => (x) => period === 'all' || x.period === period;
-
-export function filterPrompts(prompts, { period = 'all', routes = ROUTES } = {}) {
-  return prompts.filter((p) => inPeriod(period)(p) && routes.includes(p.route));
-}
 
 export function dailySeries(dailyCalls) {
   const presentDays = [...new Set(dailyCalls.map((d) => d.day))].sort();
@@ -44,31 +39,39 @@ export function sizeBinSeries(sizeBins, { period = 'all' } = {}) {
   };
 }
 
-const scored = (prompts, opts) => filterPrompts(prompts, opts).filter((p) => p.score !== null);
+export const CALL_DEPLOYMENTS = ['local', 'cloud', 'copilot'];
+export const PANELS = [['local_only', 'Local only · Jul 9–31, 2026'], ['hybrid', 'Hybrid · Aug 1–Sep 9, 2026']];
 
-export function scatterSeries(prompts, { period = 'all', routes = ROUTES } = {}) {
-  // log x-axis cannot show 0 tokens; those prompts lack a recorded size and are left out
-  const kept = scored(prompts, { period, routes }).filter((p) => p.input_tokens > 0);
-  return ROUTES.filter((r) => routes.includes(r)).map((name) => ({
-    name,
-    data: kept.filter((p) => p.route === name)
-      .map((p) => ({ value: [p.input_tokens, p.score], prompt: p })),
-  }));
+export function callPoints(data) {
+  const out = Object.fromEntries(PANELS.map(([p]) => [p, Object.fromEntries(CALL_DEPLOYMENTS.map((d) => [d, []]))]));
+  for (const [period, deployment, tokens, promptIdx] of data.calls) {
+    const prompt = data.prompts[promptIdx];
+    out[period][deployment].push({ value: [tokens, prompt.score], tokens, prompt });
+  }
+  return out;
 }
 
-export function unplottedCount(prompts, opts = {}) {
-  return scored(prompts, opts).filter((p) => !(p.input_tokens > 0)).length;
+export function logRange(values, base = 10) {
+  const log = (v) => Math.log(v) / Math.log(base);
+  let lo = Infinity; let hi = -Infinity;
+  for (const v of values) { if (v < lo) lo = v; if (v > hi) hi = v; }
+  return { min: base ** Math.floor(log(lo)), max: base ** Math.ceil(log(hi)) };
 }
 
-export function tooltipLines(p) {
+export function callTooltipLines(tokens, p) {
   return [
-    `${fmt(p.input_tokens)} initial input tokens`,
-    `Trajectory score ${p.score.toFixed(2)}`,
+    `${fmt(tokens)} input tokens in this call`,
+    `Prompt trajectory score ${p.score.toFixed(2)}`,
     `Agent depth ${p.agent_depth}`,
     `Prompt ${p.prompt_position} in its chat session`,
     `${fmt(p.tool_calls)} linked tool call${p.tool_calls === 1 ? '' : 's'}`,
     `${p.subagent_runs} subagent run${p.subagent_runs === 1 ? '' : 's'}`,
   ];
+}
+
+export function callCoverageText({ plotted, zero_tokens: zero, no_score: noScore }) {
+  return `${fmt(plotted)} calls plotted; ${fmt(zero)} without recorded input tokens and `
+    + `${fmt(noScore)} without a scored prompt are omitted.`;
 }
 
 export function coverageText({ prompts, scored }) {
