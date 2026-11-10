@@ -64,6 +64,12 @@ registerFigure('tensor-wave', async (el, cfg = {}) => {
   reduced ? renderer.render(scene, camera) : requestAnimationFrame(draw);
 });
 
+// --- local-ai-explorer: Token Economy snapshot charts (ECharts, lazy) ---
+registerFigure('local-ai-explorer', async (el, cfg = {}) => {
+  const { mountLocalAiExplorer } = await import('/assets/js/local-ai-explorer/explorer.js');
+  await mountLocalAiExplorer(el, cfg);
+});
+
 function initAll() {
   document.querySelectorAll('[data-figure]').forEach((el) => {
     const type = el.dataset.figure;

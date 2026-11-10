@@ -1,5 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
+import { access, readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import {
   ROUTES, filterPrompts, dailySeries, sizeBinSeries, scatterSeries, tooltipLines, coverageText,
 } from '../assets/js/local-ai-explorer/model.js';
@@ -62,4 +65,15 @@ test('tooltipLines lists raw components and never reasoning tokens', () => {
 test('coverageText', () => {
   assert.equal(coverageText({ prompts: 1479, scored: 1400 }),
     '1,400 of 1,479 prompts have every score component.');
+});
+
+const root = join(import.meta.dirname, '..');
+
+test('build ships explorer module, data snapshot, and figure registration', async () => {
+  await new Promise((res, rej) => execFile('node', ['src/build.mjs'], { cwd: root },
+    (e) => (e ? rej(e) : res())));
+  await access(join(root, 'dist/assets/js/local-ai-explorer/explorer.js'));
+  await access(join(root, 'dist/assets/data/local-ai-explorer-2026-09-09.json'));
+  const figures = await readFile(join(root, 'dist/assets/js/figures.js'), 'utf8');
+  assert.match(figures, /registerFigure\('local-ai-explorer'/);
 });
