@@ -1,0 +1,3 @@
+[submodule "cocktail_party_problem"]
+	path = cocktail_party_problem
+	url = https://huggingface.co/spaces/Padenarie/The_Cocktail_Party_Problem
