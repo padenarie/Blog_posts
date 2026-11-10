@@ -224,6 +224,8 @@ async function main() {
   await mkdir(join(dist, 'assets', 'js', 'vendor'), { recursive: true });
   await cp(join(root, 'node_modules/three/build/three.module.js'),
     join(dist, 'assets', 'js', 'vendor', 'three.module.js'));
+  await cp(join(root, 'node_modules/echarts/dist/echarts.esm.min.js'),
+    join(dist, 'assets', 'js', 'vendor', 'echarts.esm.min.js'));
 
   console.log(`built ${posts.length} post(s) -> ${dist}`);
 }

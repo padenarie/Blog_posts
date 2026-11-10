@@ -20,6 +20,7 @@ test('build produces the expected dist/ structure', async () => {
     'dist/assets/profile.jpg',
     'dist/assets/css/main.css', 'dist/assets/js/main.js',
     'dist/assets/js/vendor/three.module.js',
+    'dist/assets/js/vendor/echarts.esm.min.js',
   ];
   for (const p of expect) await access(join(root, p));
   const home = await readFile(join(root, 'dist/index.html'), 'utf8');
