@@ -5,6 +5,16 @@ description: "Three weeks of local-only AI coding, the usage data, and the spec-
 tags: [local-ai, agents, workflow]
 ---
 
+**12 min read**
+
+**TL;DR**
+
+- I spent three weeks, July 9–31, 2026, doing all my coding work with local models only, then switched cloud models back on and kept measuring.
+- Local 27B-class models such as Qwen 3.8 27B handled a large share of daily work: repo search, unit tests, bug spotting, and implementing features from a clear spec.
+- They fell short on long refactors, huge repositories, and questions that need broad knowledge rather than reasoning, such as Terraform on Azure.
+- Once I could choose again, a clear split appeared: cloud calls had a median of about 84k input tokens, local calls about 33k. The interactive explorer below shows it.
+- What stayed is a hybrid, spec-driven workflow: cloud models design, plan and review, local models implement. The orchestrator agent behind it is available to download.
+
 ## The bet
 
 In July 2026 I switched off cloud AI for my day-to-day software engineering work. The hypothesis was simple and, in hindsight, a little bold: for the work I actually do, a sufficiently capable model running on my own hardware could replace cloud AI for most tasks without materially reducing my productivity.
@@ -32,39 +42,8 @@ Three weeks is long enough to stop treating the setup as a novelty. By the secon
 
 The first thing I learned is that "running a local model" is not a single decision. It is a stack of decisions, and every layer can make or break the experience.
 
-<figure class="diagram diagram--stack">
-<div class="dg-stack">
-<div class="dg-stack-prep">
-<div class="dg-box"><div class="dg-logos" style="float:right"><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/unsloth.png" alt="Unsloth" loading="lazy"></div><h4>Model development &amp; preparation</h4><p class="dg-muted">Where models are created, adapted and prepared (out of scope here)</p>
-<div class="dg-sub"><h5>Model creation &amp; adaptation</h5><div class="dg-chips"><span>Pre-training / model building</span><span>Fine-tuning</span></div></div>
-<div class="dg-sub"><h5>Optimization &amp; packaging</h5><div class="dg-chips"><span>Quantization</span><span>Packaging &amp; export</span></div></div></div>
-<p class="dg-arrow" aria-hidden="true">↕</p>
-<div class="dg-layer"><svg class="dg-icon" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg><div><h4>Model artifacts &amp; repositories</h4><p class="dg-muted">e.g. Hugging Face Hub, GitHub</p></div><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/huggingface.svg" alt="Hugging Face" loading="lazy"></div>
-<p class="dg-muted">Models are downloaded for inference, or pushed back after preparation.</p>
-</div>
-<div class="dg-stack-layers">
-<div class="dg-layer"><svg class="dg-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M10 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg><div><h4>Consuming applications / clients</h4><p class="dg-muted">Chat UI, IDEs (VS Code), agents, custom apps</p></div><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/vscode.png" alt="VS Code" loading="lazy"></div>
-<p class="dg-arrow" aria-hidden="true">↕</p>
-<div class="dg-layer"><svg class="dg-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></svg><div><h4>Serving &amp; integration layer</h4><p class="dg-muted">APIs, web UI, orchestration, auth, prompt management, RAG, tools</p></div><div class="dg-logos"><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/lmstudio.svg" alt="LM Studio" loading="lazy"><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/ollama.png" alt="Ollama" loading="lazy"><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/llamacpp.png" alt="llama.cpp server" loading="lazy"><img height="34" class="dg-logo dg-logo--wide" src="../../assets/img/local-ai/mtplx.png" alt="MTPLX" loading="lazy"></div></div>
-<p class="dg-arrow" aria-hidden="true">↕</p>
-<div class="dg-box"><h4 style="text-align:center">Model execution stack (on-device)</h4><p class="dg-muted" style="text-align:center">How models are executed</p>
-<div class="dg-sub dg-exec-row"><div style="flex:1"><h5>Model execution software</h5><div class="dg-layer"><div><h4>Inference engines &amp; runtimes</h4><p class="dg-muted">llama.cpp, MLX-LM, vLLM, OpenVINO Runtime, ONNX Runtime, TensorRT-LLM</p></div></div></div><div class="dg-logos"><img height="34" class="dg-logo dg-logo--wide" src="../../assets/img/local-ai/vllm.png" alt="vLLM" loading="lazy"><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/mlx.png" alt="MLX" loading="lazy"></div></div>
-<div class="dg-sub dg-exec-row"><div style="flex:1"><h5>Execution foundation</h5><div class="dg-layer"><div><h4>Compute backends &amp; accelerator APIs</h4><p class="dg-muted">CUDA, Metal, Vulkan, ROCm, oneDNN, OpenCL, CPU kernels</p></div></div></div><div class="dg-logos"><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/llamacpp.png" alt="ggml / llama.cpp" loading="lazy"><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/nvidia.png" alt="NVIDIA" loading="lazy"></div></div>
-</div>
-</div>
-<ul class="dg-options" aria-label="Options at every layer">
-<li>Quants Q4 / Q5 / Q6 / mixed precision</li><li>KV-cache quantization</li><li>TurboQuant</li><li>ANE</li><li>MTP heads</li><li>DFlash drafter models</li><li>Dense / MoE / MoA models</li><li>Harnesses</li><li class="dg-muted">…so many possibilities, settings and options</li>
-</ul>
-<div class="dg-hw" role="group" aria-label="Hardware (on-device)">
-<h4>Hardware (on-device)</h4>
-<div class="dg-hw-item"><svg class="dg-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1.5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg><span><b>CPU</b><br><span class="dg-muted">cores</span></span></div>
-<div class="dg-hw-item"><svg class="dg-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="11" rx="1.5"/><circle cx="9" cy="11.5" r="3"/><path d="M15 9h4M15 12h4M5 17v3M19 17v3"/></svg><span><b>GPU / unified memory</b><br><span class="dg-muted">VRAM, bandwidth, compute</span></span></div>
-<div class="dg-hw-item"><svg class="dg-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/></svg><span><b>NPU / AI accelerator</b></span></div>
-<div class="dg-hw-item"><svg class="dg-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="8" width="20" height="8" rx="1"/><path d="M6 11v2M10 11v2M14 11v2M18 11v2M5 16v3M19 16v3"/></svg><span><b>RAM</b><br><span class="dg-muted">system memory</span></span></div>
-<div class="dg-hw-item"><svg class="dg-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 6h6M9 18h.01"/></svg><span><b>Storage</b><br><span class="dg-muted">SSD / NVMe</span></span></div>
-<div class="dg-hw-devices"><img height="44" src="../../assets/img/local-ai/macbook.png" alt="Laptop" loading="lazy"><img height="44" src="../../assets/img/local-ai/pc-tower.png" alt="Desktop PC" loading="lazy"><img height="44" src="../../assets/img/local-ai/phone.png" alt="Phone" loading="lazy"></div>
-</div>
-</div>
+<figure class="diagram diagram--slide diagram--stack">
+<a href="../../assets/img/local-ai/slide-stack.png" title="Open the full-size image"><img src="../../assets/img/local-ai/slide-stack.png" width="1881" height="768" alt="Layered diagram of the on-device AI stack. Left: model development and preparation (out of scope): pre-training and fine-tuning, quantization and packaging, feeding model artifacts and repositories such as Hugging Face and GitHub. Centre, top to bottom: consuming applications and clients (chat UI, IDEs such as VS Code, agents); the serving and integration layer (APIs, web UI, orchestration, auth, prompt management, RAG, tools) with LM Studio, Ollama, llama.cpp and MTPLX; the on-device model execution stack with inference engines and runtimes (llama.cpp, MLX-LM, vLLM, OpenVINO, ONNX Runtime, TensorRT-LLM) and compute backends (CUDA, Metal, Vulkan, ROCm, oneDNN, OpenCL, CPU kernels). Bottom: on-device hardware (CPU, GPU and unified memory, NPU, RAM, storage) on a laptop, desktop and phone. Right: options at every layer, including Q4/Q5/Q6 and mixed-precision quants, KV-cache quantization, TurboQuant, ANE, MTP heads, DFlash drafter models, dense, MoE and MoA models, and harnesses." loading="lazy"></a>
 <figcaption>The on-device model stack: what I had to choose at every layer, from hardware to the client in my editor. Model preparation sits next to it and was out of scope for the experiment.</figcaption>
 </figure>
 
@@ -78,15 +57,8 @@ None of that is plug-and-play. Quantization level, KV-cache settings, context le
 
 The second lesson was about size. Smaller models are fast and cheap to run, but below a certain size they stop being useful for agentic coding work. Larger models do not fit comfortably on the hardware I have. In between there is a class of models that, for me, hits the sweet spot.
 
-<figure class="diagram diagram--sizes">
-<ol class="dg-steps">
-<li class="dg-step"><div class="dg-step-head">~4B</div><div class="dg-step-body"><ul><li>Basic Q&amp;A</li><li>Limited instruction following</li></ul><strong>Use:</strong><ul><li>Lightweight extraction</li></ul></div></li>
-<li class="dg-step"><div class="dg-step-head">~8B</div><div class="dg-step-body"><ul><li>Factual / coding assistance</li><li>Handles bounded, well-specified tasks</li></ul><strong>Use:</strong><ul><li>Knowledge bots</li><li>Summarization</li></ul></div></li>
-<li class="dg-step"><div class="dg-step-head">~15B</div><div class="dg-step-body"><ul><li>Short-horizon agentic work</li><li>Can understand and modify existing code</li></ul><strong>Use:</strong><ul><li>Single unit tests</li><li>Small Python functions</li><li>Repo search</li><li>Single-tool workflows</li></ul></div></li>
-<li class="dg-step dg-step--sweet"><div class="dg-sweet-tag"><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/qwen.png" alt="Qwen" loading="lazy"><span>Dense: 3.8 – 27B<br>MoE: 3.6 – 35B-A3B</span></div><div class="dg-step-head">~25B–35B</div><div class="dg-step-body"><ul><li>Strong coding and reasoning capability</li><li>Useful medium- and long-horizon agentic behavior</li></ul><strong>Use:</strong><ul><li>Complex implementation</li><li>Repo-wide work</li><li>Multi-step agentic tasks</li><li>General assistant intelligence</li></ul></div></li>
-<li class="dg-step dg-step--beyond"><div class="dg-step-head">&gt; 35B</div><div class="dg-step-body dg-muted">…</div></li>
-</ol>
-<p class="dg-axis">Total model parameters (B for billions)</p>
+<figure class="diagram diagram--slide diagram--sizes">
+<a href="../../assets/img/local-ai/slide-model-tiers.png" title="Open the full-size image"><img src="../../assets/img/local-ai/slide-model-tiers.png" width="1627" height="768" alt="Staircase of model sizes by total parameters. About 4B: basic Q&amp;A and limited instruction following, for lightweight extraction. About 8B: factual and coding assistance and bounded, well-specified tasks, for knowledge bots and summarization. About 15B: short-horizon agentic work and modifying existing code, for single unit tests, small Python functions, repo search and single-tool workflows. About 25B to 35B, highlighted with the Qwen logo (dense Qwen 3.8 27B, MoE Qwen 3.6 35B-A3B): strong coding and reasoning and useful medium- to long-horizon agentic behavior, for complex implementation, repo-wide work, multi-step agentic tasks and general assistant intelligence. Above 35B is shown as an empty step." loading="lazy"></a>
 <figcaption>Model size versus what I could use it for. The ~25–35B class, dense and mixture-of-experts, served me best in day-to-day work.</figcaption>
 </figure>
 
@@ -100,7 +72,19 @@ Because Copilot was exporting telemetry the whole time, I can look at how the tw
 
 <div class="fig" data-figure="local-ai-explorer" data-config='{"src":"/assets/data/local-ai-explorer-2026-09-09.json","view":"trajectory"}'></div>
 
-The trajectory score is a simple activity measure per prompt. It adds the logarithms of three things: how many sequential agent iterations the prompt took, how far into a chat session the prompt was, and how many tool calls were linked to it. It deliberately leaves out reasoning tokens, which the telemetry does not record, and output tokens, which measure verbosity as much as work. A high score means more observed agent activity, not a harder or better task.
+The vertical axis is what I call the trajectory score: a simple measure of how much observable agent activity one prompt caused. Here a prompt <math><mi>p</mi></math> is one request I typed, together with every model call and tool call the agent made to answer it. Its score is
+
+<div class="formula">
+<math display="block"><mrow><mi>T</mi><mo>(</mo><mi>p</mi><mo>)</mo><mo>=</mo><mi>ln</mi><mo>(</mo><mn>1</mn><mo>+</mo><msub><mi>d</mi><mi>p</mi></msub><mo>)</mo><mo>+</mo><mi>ln</mi><mo>(</mo><mn>1</mn><mo>+</mo><msub><mi>n</mi><mi>p</mi></msub><mo>)</mo><mo>+</mo><mi>ln</mi><mo>(</mo><mn>1</mn><mo>+</mo><msub><mi>k</mi><mi>p</mi></msub><mo>)</mo></mrow></math>
+</div>
+
+where:
+
+- <math><msub><mi>d</mi><mi>p</mi></msub></math> is the **agent depth**: the number of sequential agent iterations for <math><mi>p</mi></math>, measured as the highest recorded turn index plus one. Very long runs only export their last turn event, so this is a lower bound.
+- <math><msub><mi>n</mi><mi>p</mi></msub></math> is the **prompt position**: the 1-based position of <math><mi>p</mi></math> in its chat session, a proxy for how much conversation came before it.
+- <math><msub><mi>k</mi><mi>p</mi></msub></math> is the number of **tool calls** linked to <math><mi>p</mi></math>, or 0 if none were observed.
+
+Every model call made for <math><mi>p</mi></math> is plotted at its own input-token count on the horizontal axis and at <math><mi>T</mi><mo>(</mo><mi>p</mi><mo>)</mo></math> on the vertical axis. Because depth and position are at least 1, the lowest possible score is 2 ln 2 ≈ 1.39: a single-step answer to the first prompt of a session, without tools. The highest score in this data is 10.70. The logarithms stop one very long run from dominating the scale, and the three terms are weighted equally because I have no basis for ranking one above the others. The score deliberately leaves out reasoning tokens, which the telemetry does not record, and output tokens, which measure verbosity as much as work. A high score means more observed agent activity, not a harder or better task.
 
 During the local-only weeks, local models handled 1,419 calls, and the bulk of them sat between 10,000 and 100,000 input tokens, with the median at about 33,000. In the hybrid period the picture splits. Local calls stayed in the same place, with a median of about 33,000 input tokens. Cloud calls moved to the right: their median input was about 84,000 tokens, and 648 of 1,614 cloud calls were 100,000 tokens or more, compared to only 40 of 1,587 local calls. The separate columns at the left are Copilot's own helper models, which handle small background requests in the editor and are not models I chose.
 
@@ -120,25 +104,9 @@ And of course, getting there took significant tinkering. Performance depended he
 
 When I turned cloud models back on, I did not simply go back to how I worked before. Over the following weeks a workflow settled in that uses each tier for what it is good at. It is a form of spec-driven development.
 
-<figure class="diagram diagram--workflow">
-<div class="dg-flow">
-<div class="dg-zone"><span class="dg-zone-label">Cloud AI</span>
-<ol class="dg-steps-row">
-<li class="dg-node"><p class="dg-node-title"><b>1</b>Brainstorm &amp; design the spec</p><div class="dg-logos"><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/vscode.png" alt="VS Code" loading="lazy"><span class="dg-plus">+</span><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/anthropic.png" alt="Anthropic" loading="lazy"><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/openai.png" alt="OpenAI" loading="lazy"></div><p class="dg-muted">Together with me, the cloud model writes the specification.</p><span class="dg-gate">✓ I approve the spec</span></li>
-<li class="dg-node"><p class="dg-node-title"><b>2</b>Spec → tasks with a plan</p><p class="dg-muted">The cloud model breaks the spec into small tasks and routes each one to a worker.</p><span class="dg-gate">✓ I approve the tasks</span><span class="dg-gate">✓ I choose the model per task</span></li>
-<li class="dg-node"><p class="dg-node-title"><b>4</b>Cloud model reviews the code</p><p class="dg-muted">If the output is insufficient, the task goes back to its worker with feedback.</p><span class="dg-gate">↺ back to the worker</span></li>
-</ol>
-</div>
-<div class="dg-zone dg-zone--local"><span class="dg-zone-label">3 · Workers write code / perform the task</span>
-<ul class="dg-lanes">
-<li class="dg-lane"><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/pi.png" alt="PI agent" loading="lazy"><span class="dg-plus">+</span><img width="104" class="dg-device" src="../../assets/img/local-ai/pc-tower.png" alt="Desktop with two RTX 3060 cards" loading="lazy"><span class="dg-plus">+</span><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/qwen.png" alt="Qwen" loading="lazy"><span class="dg-model">3.8 27B</span></li>
-<li class="dg-lane"><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/pi.png" alt="PI agent" loading="lazy"><span class="dg-plus">+</span><img width="104" class="dg-device" src="../../assets/img/local-ai/macbook.png" alt="MacBook Pro" loading="lazy"><span class="dg-plus">+</span><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/qwen.png" alt="Qwen" loading="lazy"><span class="dg-model">3.8 27B</span></li>
-<li class="dg-lane"><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/pi.png" alt="PI agent" loading="lazy"><span class="dg-plus">+</span><img width="104" class="dg-device" src="../../assets/img/local-ai/macbook.png" alt="MacBook Pro" loading="lazy"><span class="dg-plus">+</span><img width="34" height="34" class="dg-logo" src="../../assets/img/local-ai/nvidia.png" alt="NVIDIA" loading="lazy"><span class="dg-model dg-model--nv">3.5 Lightning 30B-3B</span></li>
-</ul>
-</div>
-<div class="dg-node"><p class="dg-node-title"><b>5</b><svg class="dg-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>Final review by me</p><span class="dg-gate">✓ I approve the result</span></div>
-</div>
-<figcaption>The hybrid, spec-driven workflow: cloud models design, plan and review; local models do the implementation work; I approve at every gate.</figcaption>
+<figure class="diagram diagram--slide diagram--workflow">
+<a href="../../assets/img/local-ai/slide-workflow.png" title="Open the full-size image"><img src="../../assets/img/local-ai/slide-workflow.png" width="1422" height="768" alt="Spec-driven workflow. Inside a dashed Cloud AI boundary: the user brainstorms and designs a spec with a cloud model in VS Code (Anthropic and OpenAI logos), the cloud AI writes the spec, and a cloud model later reviews the subagents' code, routing insufficient output back to the subagent with feedback. Below the boundary, the cloud AI converts the spec into tasks with a plan and routes them to models: PI agents on the desktop PC with Qwen 3.8 27B, on the MacBook with Qwen 3.8 27B, and on the MacBook with NVIDIA 3.5 Lightning 30B-3B. The agents write code, which goes to the cloud review step and, when finished, to the user for final review." loading="lazy"></a>
+<figcaption>The hybrid, spec-driven workflow: cloud models design, plan and review; local models do the implementation work; I review the final result.</figcaption>
 </figure>
 
 It starts with me and a frontier cloud model in VS Code, brainstorming and turning an idea into a written specification. Nothing moves until I approve that spec. The cloud model then breaks it into small tasks with a plan, and I approve that breakdown too, including which model runs each task. Most implementation tasks go to local workers: Qwen 3.8 27B on the desktop or the MacBook, or an NVIDIA 30B mixture-of-experts model when speed matters more than depth. When a worker finishes, a cloud model reviews the result. If the output is not good enough, the task goes back to the worker with concrete feedback. When everything is done, the code comes to me for a final review.

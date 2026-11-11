@@ -51,3 +51,10 @@ test('readingTime is words/200 rounded up, min 1', () => {
   const body = Array.from({ length: 400 }, (_, i) => `w${i}`).join(' ');
   assert.equal(readingTime(body), 2);
 });
+
+test('readingTime ignores HTML markup and attribute text', () => {
+  const prose = Array.from({ length: 200 }, (_, i) => `w${i}`).join(' ');
+  const alt = Array.from({ length: 300 }, (_, i) => `a${i}`).join(' ');
+  const body = `${prose}\n\n<figure class="diagram"><img src="x.png" alt="${alt}"><figcaption>cap</figcaption></figure>`;
+  assert.equal(readingTime(body), 2);
+});

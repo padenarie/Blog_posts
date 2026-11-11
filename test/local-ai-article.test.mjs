@@ -16,7 +16,7 @@ async function draft() {
 test('local AI draft images resolve from the markdown file and from the published page', async () => {
   const { body } = await draft();
   const srcs = [...body.matchAll(/<img[^>]*\ssrc="([^"]+)"/g)].map((m) => m[1]);
-  assert.ok(srcs.length > 20, `only ${srcs.length} images`);
+  assert.ok(srcs.length >= 4, `only ${srcs.length} images`);
   const { access } = await import('node:fs/promises');
   const { dirname, resolve } = await import('node:path');
   for (const src of new Set(srcs)) {
@@ -26,12 +26,32 @@ test('local AI draft images resolve from the markdown file and from the publishe
   }
 });
 
-test('local AI draft has the four redrawn diagrams with captions', async () => {
+test('local AI draft shows the timeline and the three original slide images with captions', async () => {
   const { html } = await draft();
-  for (const kind of ['timeline', 'stack', 'sizes', 'workflow']) {
-    assert.match(html, new RegExp(`<figure class="diagram diagram--${kind}"`), `missing ${kind} diagram`);
+  assert.match(html, /<figure class="diagram diagram--timeline"/);
+  for (const [kind, file] of [['stack', 'slide-stack.png'], ['sizes', 'slide-model-tiers.png'], ['workflow', 'slide-workflow.png']]) {
+    const fig = html.match(new RegExp(`<figure class="diagram diagram--slide diagram--${kind}"[\\s\\S]*?</figure>`));
+    assert.ok(fig, `missing ${kind} slide figure`);
+    assert.match(fig[0], new RegExp(`src="[^"]*/${file.replace('.', '\\.')}"`));
+    assert.match(fig[0], /alt="[^"]{80,}"/, `${kind} needs a descriptive alt text`);
   }
   assert.equal((html.match(/<figcaption/g) || []).length, 4);
+});
+
+test('local AI draft defines the trajectory score formally', async () => {
+  const { html } = await draft();
+  assert.match(html, /<math[^>]*display="block"/);
+  for (const sym of ['d', 'n', 'k']) assert.match(html, new RegExp(`<msub><mi>${sym}</mi><mi>p</mi></msub>`));
+  assert.match(html, /2\s*ln\s*2/);
+});
+
+test('local AI draft opens with a reading time and a 3–5 bullet TL;DR', async () => {
+  const { body } = await draft();
+  const top = body.slice(0, body.indexOf('\n## '));
+  assert.match(top, /\d+[-–]?\d*\s*min(ute)?s?\s+read/i);
+  const tldr = top.slice(top.search(/TL;DR/i));
+  const bullets = tldr.split('\n').filter((l) => /^\s*[-*]\s+\S/.test(l));
+  assert.ok(bullets.length >= 3 && bullets.length <= 5, `${bullets.length} TL;DR bullets`);
 });
 
 test('local AI draft embeds the explorer and the orchestrator download', async () => {

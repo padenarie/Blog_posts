@@ -3,7 +3,7 @@ import { join, basename } from 'node:path';
 import { parseFrontmatter } from './frontmatter.mjs';
 
 export function readingTime(body) {
-  const words = body.trim().split(/\s+/).filter(Boolean);
+  const words = body.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).filter(Boolean);
   return Math.max(1, Math.ceil(words.length / 200));
 }
 
