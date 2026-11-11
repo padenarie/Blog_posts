@@ -351,9 +351,10 @@ body[data-page="about"] .prose > p:first-child { font-size: 1.35rem; color: var(
 }
 .dg-plus { color: var(--text-muted); }
 
-/* original slide images: transparent PNGs with dark text, so they sit on a white panel in both themes */
-.diagram--slide { padding: 16px; }
-.diagram--slide img { width: 100%; height: auto; padding: 12px; border-radius: 6px; background: #fff; }
+/* original slide images: transparent PNGs with dark text; transparent in light mode, on a light panel in dark mode */
+.diagram--slide { padding: 0; border: 0; background: transparent; }
+.diagram--slide img { width: 100%; height: auto; }
+:root:not([data-theme="light"]) .diagram--slide img { padding: 12px; border-radius: 6px; background: #f7f9fb; }
 
 /* display math in posts */
 .formula { margin: 1.4em 0; overflow-x: auto; }
