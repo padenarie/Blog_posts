@@ -74,19 +74,27 @@ Because Copilot was exporting telemetry the whole time, I can look at how the tw
 
 <div class="fig" data-figure="local-ai-explorer" data-config='{"src":"/assets/data/local-ai-explorer-2026-09-09.json","view":"trajectory"}'></div>
 
-The vertical axis is what I call the trajectory score: a simple measure of how much observable agent activity one prompt caused. Here a prompt <math><mi>p</mi></math> is one request I typed, together with every model call and tool call the agent made to answer it. Its score is
+The vertical axis is what I call the trajectory score: a measure of how much observable agent activity one prompt caused. Here a prompt <math><mi>p</mi></math> is one request I typed, together with every model call and tool call the agent made to answer it. The score is the weighted complexity formula from my talk, applied to the three components the telemetry can actually observe:
 
 <div class="formula">
-<math display="block"><mrow><mi>T</mi><mo>(</mo><mi>p</mi><mo>)</mo><mo>=</mo><mi>ln</mi><mo>(</mo><mn>1</mn><mo>+</mo><msub><mi>d</mi><mi>p</mi></msub><mo>)</mo><mo>+</mo><mi>ln</mi><mo>(</mo><mn>1</mn><mo>+</mo><msub><mi>n</mi><mi>p</mi></msub><mo>)</mo><mo>+</mo><mi>ln</mi><mo>(</mo><mn>1</mn><mo>+</mo><msub><mi>k</mi><mi>p</mi></msub><mo>)</mo></mrow></math>
+<math display="block"><mrow><mi>T</mi><mo>(</mo><mi>p</mi><mo>)</mo><mo>=</mo><mfrac><mn>1</mn><mn>3</mn></mfrac><mo>(</mo><msub><mover accent="true"><mi>d</mi><mo>^</mo></mover><mi>p</mi></msub><mo>+</mo><msub><mover accent="true"><mi>n</mi><mo>^</mo></mover><mi>p</mi></msub><mo>+</mo><msub><mover accent="true"><mi>k</mi><mo>^</mo></mover><mi>p</mi></msub><mo>)</mo></mrow></math>
 </div>
 
-where:
+Each component is log-scaled and normalized by its 95th percentile across all prompts:
+
+<div class="formula">
+<math display="block"><mrow><msub><mover accent="true"><mi>x</mi><mo>^</mo></mover><mi>p</mi></msub><mo>=</mo><mfrac><mrow><mi>ln</mi><mo>(</mo><mn>1</mn><mo>+</mo><msub><mi>x</mi><mi>p</mi></msub><mo>)</mo></mrow><mrow><mi>ln</mi><mo>(</mo><mn>1</mn><mo>+</mo><msub><mi>P</mi><mn>95</mn></msub><mo>(</mo><mi>x</mi><mo>)</mo><mo>)</mo></mrow></mfrac></mrow></math>
+</div>
+
+where <math><mi>x</mi></math> stands for each of the three components:
 
 - <math><msub><mi>d</mi><mi>p</mi></msub></math> is the **agent depth**: the number of sequential agent iterations for <math><mi>p</mi></math>, measured as the highest recorded turn index plus one. Very long runs only export their last turn event, so this is a lower bound.
 - <math><msub><mi>n</mi><mi>p</mi></msub></math> is the **prompt position**: the 1-based position of <math><mi>p</mi></math> in its chat session, a proxy for how much conversation came before it.
 - <math><msub><mi>k</mi><mi>p</mi></msub></math> is the number of **tool calls** linked to <math><mi>p</mi></math>, or 0 if none were observed.
 
-Every model call made for <math><mi>p</mi></math> is plotted at its own input-token count on the horizontal axis and at <math><mi>T</mi><mo>(</mo><mi>p</mi><mo>)</mo></math> on the vertical axis. Because depth and position are at least 1, the lowest possible score is 2 ln 2 ≈ 1.39: a single-step answer to the first prompt of a session, without tools. The highest score in this data is 10.70. The logarithms stop one very long run from dominating the scale, and the three terms are weighted equally because I have no basis for ranking one above the others. The score deliberately leaves out reasoning tokens, which the telemetry does not record, and output tokens, which measure verbosity as much as work. A high score means more observed agent activity, not a harder or better task.
+In this data the P<sub>95</sub> values are 18 for depth, 20 for prompt position and 24.4 for tool calls. The logarithm stops one very long run from dominating the scale, and dividing by the 95th percentile puts the three components on the same footing, so equal weights of one third really do mean equal influence. A prompt with every component at its 95th percentile scores exactly 1. Because depth and position are at least 1, the lowest possible score is about 0.15: a single-step answer to the first prompt of a session, without tools. The highest score in this data is 1.16.
+
+Every model call made for <math><mi>p</mi></math> is plotted at its own input-token count on the horizontal axis and at <math><mi>T</mi><mo>(</mo><mi>p</mi><mo>)</mo></math> on the vertical axis. The formula in my talk also had terms for thinking tokens and output tokens. I left both out here: the telemetry does not record thinking tokens, and output tokens measure verbosity as much as work. A high score means more observed agent activity, not a harder or better task.
 
 During the local-only weeks, local models handled 1,419 calls, and the bulk of them sat between 10,000 and 100,000 input tokens, with the median at about 33,000. In the hybrid period the picture splits. Local calls stayed in the same place, with a median of about 33,000 input tokens. Cloud calls moved to the right: their median input was about 84,000 tokens, and 648 of 1,614 cloud calls were 100,000 tokens or more, compared to only 40 of 1,587 local calls. The separate columns at the left are Copilot's own helper models, which handle small background requests in the editor and are not models I chose.
 

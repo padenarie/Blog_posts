@@ -40,9 +40,15 @@ test('local AI draft shows the timeline and the three original slide images with
 
 test('local AI draft defines the trajectory score formally', async () => {
   const { html } = await draft();
-  assert.match(html, /<math[^>]*display="block"/);
-  for (const sym of ['d', 'n', 'k']) assert.match(html, new RegExp(`<msub><mi>${sym}</mi><mi>p</mi></msub>`));
-  assert.match(html, /2\s*ln\s*2/);
+  const blocks = html.match(/<math[^>]*display="block"[\s\S]*?<\/math>/g) || [];
+  assert.ok(blocks.length >= 2, 'needs the weighted sum and the normalization');
+  const math = blocks.join('');
+  for (const sym of ['d', 'n', 'k']) assert.match(math, new RegExp(`<msub><mover accent="true"><mi>${sym}</mi><mo>\\^</mo></mover><mi>p</mi></msub>`));
+  assert.match(math, /<msub><mi>P<\/mi><mn>95<\/mn><\/msub>/);
+  assert.match(math, /<mfrac><mn>1<\/mn><mn>3<\/mn><\/mfrac>/);
+  assert.match(html, /P<sub>95<\/sub> values? (are|is) 18[^.]*20[^.]*24\.4/);
+  assert.match(html, /lowest possible score is (about )?0\.15/);
+  assert.match(html, /highest score in this data is 1\.16/);
 });
 
 test('local AI draft opens with a reading time and a 3–5 bullet TL;DR', async () => {

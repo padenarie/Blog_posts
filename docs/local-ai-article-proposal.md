@@ -70,13 +70,13 @@ The chart on slide 7 shows an older weighted complexity formula with thinking to
 Use a new, explicitly named **agent trajectory activity score** for this article, computed once per prompt/`conv`:
 
 ```text
-trajectory_score =
-    ln(1 + agent_depth)
-  + ln(1 + prompt_position)
-  + ln(1 + observed_tool_calls)
+trajectory_score(p) = (1/3) * (d̂_p + n̂_p + k̂_p)
+x̂_p = ln(1 + x_p) / ln(1 + P95(x))
 ```
 
-Use equal weights. The components are:
+This is the deck's weighted complexity formula (WCS = Σ w_i x̂_i with P95-normalized log terms) restricted to the three observed components: agent depth `d` (deck D), prompt position `n` (deck L) and tool calls `k` (deck A), with equal weights. P95 is taken over all scored prompts in the snapshot (18, 20 and 24.4) and exported with it. The deck's thinking-token and output-token terms are excluded.
+
+The components are:
 
 - `agent_depth` — sequential agent/tool depth for the prompt: Token Economy's existing `iterations` component, `max(turn.index) + 1` per conversation, deduplicated by `span_id`. This is the "sequential tool depth / agent iterations" component from the Token Economy score design. It is a lower bound for the longest runs, whose SDK export keeps only the final turn event.
 - `prompt_position` — conversation length at the time of the prompt: the 1-based position of the prompt within its chat session (`session_id`), ordered by session-start timestamp. In the September 9 snapshot, 1,479 prompts fall into 293 chat sessions.
