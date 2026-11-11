@@ -27,7 +27,7 @@ Status: for review, not for publication
 
 Target: approximately 1,800–2,200 words, with four adapted diagrams, one embedded explorer, and a downloadable agent bundle. Write in first person and keep the original experiment's hypothesis → observation → changed workflow arc.
 
-In the current local data snapshot (UTC date boundaries, with the `patches.json` corrections in effect), the July 9–31 interval contains 1,419 local inference calls and no cloud calls; 754 cloud calls in that interval are excluded by the correction table as not part of the experiment. August 1–September 9 contains 1,587 local calls, 1,614 cloud coding-model calls, and 1,961 calls to Copilot's built-in helper models (1,958 `gpt-4o-mini` and 3 `instant-apply-qwen3-4b-no-think`, classified as `copilot`). Report the helper calls separately rather than as cloud coding work. These counts establish usage patterns only; the two intervals differ in length and task mix.
+In the current local data snapshot (UTC date boundaries, with the `patches.json` corrections in effect), the July 9–31 interval contains 1,419 local inference calls and no cloud calls. August 1–September 9 contains 1,587 local calls, 1,614 cloud coding-model calls, and 1,961 calls to Copilot's built-in helper models (1,958 `gpt-4o-mini` and 3 `instant-apply-qwen3-4b-no-think`, classified as `copilot`). Report the helper calls separately rather than as cloud coding work. These counts establish usage patterns only; the two intervals differ in length and task mix.
 
 ## Visuals and interactive explorer
 

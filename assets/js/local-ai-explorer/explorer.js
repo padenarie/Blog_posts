@@ -2,7 +2,7 @@
 import {
   COLORS, CALL_DEPLOYMENTS, PANELS, dailySeries, sizeBinSeries, coverageText,
   callPoints, logRange, callTooltipLines, callCoverageText,
-  SYMBOLS, resolveView, excludedCallsText, unbinnedText,
+  SYMBOLS, resolveView, unbinnedText,
 } from './model.js';
 
 const VIEWS = [
@@ -178,7 +178,6 @@ async function mount(root, cfg) {
     const shown = state.view === 'trajectory' ? ` ${callCoverageText(data.coverage.calls)}`
       : state.view === 'sizes' ? ` ${unbinnedText(data.coverage.size_bins_unknown)}` : '';
     note.textContent = `Data through ${data.data_through} (UTC days), with manual corrections applied. `
-      + `${excludedCallsText(data.provenance.disabled_corrections)} `
       + '“copilot” is Copilot’s built-in helper model, not a chosen coding model. '
       + `Score = ${data.score.formula}; reasoning and output tokens are excluded. `
       + `Agent depth is a lower bound for very long runs; tool calls are linked heuristically; `

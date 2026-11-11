@@ -26,16 +26,16 @@ test('local AI draft images resolve from the markdown file and from the publishe
   }
 });
 
-test('local AI draft shows the timeline and the three original slide images with captions', async () => {
-  const { html } = await draft();
-  assert.match(html, /<figure class="diagram diagram--timeline"/);
-  for (const [kind, file] of [['stack', 'slide-stack.png'], ['sizes', 'slide-model-tiers.png'], ['workflow', 'slide-workflow.png']]) {
+test('local AI draft shows the four original slide images with captions', async () => {
+  const { html, body } = await draft();
+  for (const [kind, file] of [['timeline', 'slide-timeline.png'], ['stack', 'slide-stack.png'], ['sizes', 'slide-model-tiers.png'], ['workflow', 'slide-workflow.png']]) {
     const fig = html.match(new RegExp(`<figure class="diagram diagram--slide diagram--${kind}"[\\s\\S]*?</figure>`));
     assert.ok(fig, `missing ${kind} slide figure`);
     assert.match(fig[0], new RegExp(`src="[^"]*/${file.replace('.', '\\.')}"`));
     assert.match(fig[0], /alt="[^"]{80,}"/, `${kind} needs a descriptive alt text`);
   }
   assert.equal((html.match(/<figcaption/g) || []).length, 4);
+  assert.doesNotMatch(body, /dg-tl|754|not part of the experiment/);
 });
 
 test('local AI draft defines the trajectory score formally', async () => {

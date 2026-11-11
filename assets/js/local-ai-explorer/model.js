@@ -84,9 +84,6 @@ export function resolveView(view, ids) {
   return ids.includes(view) ? view : 'daily';
 }
 
-export function excludedCallsText(disabled) {
-  return `${fmt(disabled)} cloud calls during Jul 9–31 that were not part of the experiment are excluded.`;
-}
 
 export function unbinnedText(unknown) {
   return `${fmt(unknown)} calls without recorded input tokens are not binned.`;

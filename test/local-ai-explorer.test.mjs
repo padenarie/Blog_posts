@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import {
   dailySeries, sizeBinSeries, coverageText,
   callPoints, logRange, callTooltipLines, callCoverageText, PANELS, CALL_DEPLOYMENTS,
-  SYMBOLS, resolveView, excludedCallsText, unbinnedText,
+  SYMBOLS, resolveView, unbinnedText,
 } from '../assets/js/local-ai-explorer/model.js';
 
 const PR = (o) => ({ period: 'hybrid', route: 'local', input_tokens: 10, agent_depth: 2,
@@ -74,13 +74,6 @@ test('coverageText', () => {
     '1,400 of 1,479 prompts have every score component.');
 });
 
-test('excludedCallsText reports disabled corrections with separators', () => {
-  assert.equal(excludedCallsText(754),
-    '754 cloud calls during Jul 9–31 that were not part of the experiment are excluded.');
-  assert.equal(excludedCallsText(1234),
-    '1,234 cloud calls during Jul 9–31 that were not part of the experiment are excluded.');
-});
-
 test('unbinnedText reports calls without recorded input tokens', () => {
   assert.equal(unbinnedText(44), '44 calls without recorded input tokens are not binned.');
   assert.equal(unbinnedText(1500), '1,500 calls without recorded input tokens are not binned.');
@@ -117,7 +110,7 @@ test('explorer uses deployment symbols and validates cfg.view', async () => {
   const src = await readFile(join(root, 'assets/js/local-ai-explorer/explorer.js'), 'utf8');
   assert.match(src, /symbol: SYMBOLS\[dep\]/);
   assert.match(src, /resolveView\(cfg\.view/);
-  assert.match(src, /excludedCallsText\(data\.provenance\.disabled_corrections\)/);
+  assert.doesNotMatch(src, /disabled_corrections|not part of the experiment/);
   assert.match(src, /unbinnedText\(data\.coverage\.size_bins_unknown\)/);
 });
 
