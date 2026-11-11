@@ -6,7 +6,7 @@ import { parseFrontmatter } from '../src/lib/frontmatter.mjs';
 import { renderMarkdown } from '../src/lib/render.mjs';
 
 const root = join(import.meta.dirname, '..');
-const draftPath = join(root, 'content/drafts/2026-11-local-ai-hybrid-workflow.md');
+const draftPath = join(root, 'content/posts/2026-11-local-ai-hybrid-workflow.md');
 
 async function draft() {
   const { data, body } = parseFrontmatter(await readFile(draftPath, 'utf8'));
