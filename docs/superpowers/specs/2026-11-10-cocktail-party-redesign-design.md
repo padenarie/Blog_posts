@@ -51,6 +51,8 @@ The approved mockup is `.superpowers/brainstorm/5956-1794346454/content/full-pag
    - **Per guest:** a speed control for each invited guest.
    - **Defaults:** the current app's defaults, except that **Auto PCA knee is off**: with one microphone per guest it often kept too few components.
 9. **Phone:** a single column, plus a sticky bottom bar that always shows the next action.
+10. **Lab pop-up:** about a second after load, a small card under the *Lab* link ("🧪 Want a harder party? …") with *Open the Lab* and *Got it* buttons. It keeps appearing on each visit until the visitor opens the Lab or dismisses it; that is remembered in `localStorage` (`cp-lab-hint-done`). It doesn't take focus, is announced once as a polite status message, and Escape closes it.
+11. **ⓘ hints:** every Lab option, plus the *Per guest* group, has a small round "i" button. Hovering, focusing or tapping it shows a tooltip explaining what the option does and its intended effect. Each button is linked to its tooltip with `aria-describedby`, so the control's own label stays clean.
 
 ## Architecture
 
