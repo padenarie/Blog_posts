@@ -49,6 +49,8 @@ test('local AI draft opens with a reading time and a 3–5 bullet TL;DR', async 
   const { body } = await draft();
   const top = body.slice(0, body.indexOf('\n## '));
   assert.match(top, /\d+[-–]?\d*\s*min(ute)?s?\s+read/i);
+  const { readingTime } = await import('../src/lib/posts.mjs');
+  assert.match(top, new RegExp(`\\b${readingTime(body)} min read`), 'stated reading time must match the site estimate');
   const tldr = top.slice(top.search(/TL;DR/i));
   const bullets = tldr.split('\n').filter((l) => /^\s*[-*]\s+\S/.test(l));
   assert.ok(bullets.length >= 3 && bullets.length <= 5, `${bullets.length} TL;DR bullets`);

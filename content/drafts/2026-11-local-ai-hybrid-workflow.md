@@ -5,7 +5,7 @@ description: "Three weeks of local-only AI coding, the usage data, and the spec-
 tags: [local-ai, agents, workflow]
 ---
 
-**12 min read**
+**13 min read**
 
 **TL;DR**
 
