@@ -7,3 +7,7 @@ deploy/analytics/secrets/
 deploy/analytics/real-ip/
 analytics/__pycache__/
 analytics/tests/__pycache__/
+
+# source slide decks (kept locally, never published)
+*.pptx
+~$*
