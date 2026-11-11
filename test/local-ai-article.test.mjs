@@ -31,8 +31,11 @@ test('local AI draft shows the four original slide images with captions', async 
   for (const [kind, file] of [['timeline', 'slide-timeline.png'], ['stack', 'slide-stack.png'], ['sizes', 'slide-model-tiers.png'], ['workflow', 'slide-workflow.png']]) {
     const fig = html.match(new RegExp(`<figure class="diagram diagram--slide diagram--${kind}"[\\s\\S]*?</figure>`));
     assert.ok(fig, `missing ${kind} slide figure`);
-    assert.match(fig[0], new RegExp(`src="[^"]*/${file.replace('.', '\\.')}"`));
-    assert.match(fig[0], /alt="[^"]{80,}"/, `${kind} needs a descriptive alt text`);
+    assert.match(fig[0], new RegExp(`class="slide-light"[^>]*src="[^"]*/${file.replace('.', '\\.')}"`));
+    assert.match(fig[0], new RegExp(`class="slide-dark"[^>]*src="[^"]*/${file.replace('.png', '-dark\\.png')}"`));
+    const alts = [...fig[0].matchAll(/alt="([^"]{80,})"/g)].map((m) => m[1]);
+    assert.equal(alts.length, 2, `${kind}: both theme variants need the descriptive alt text`);
+    assert.equal(alts[0], alts[1], `${kind}: theme variants describe the same slide`);
   }
   assert.equal((html.match(/<figcaption/g) || []).length, 4);
   assert.doesNotMatch(body, /dg-tl|754|not part of the experiment/);

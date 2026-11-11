@@ -324,10 +324,12 @@ body[data-page="about"] .prose > p:first-child { font-size: 1.35rem; color: var(
 .diagram figcaption { margin-top: 16px; color: var(--text-muted); font-size: 0.82rem; }
 .diagram img { display: block; }
 
-/* original slide images: transparent PNGs with dark text; transparent in light mode, on a light panel in dark mode */
+/* original slide images: transparent PNGs, with a separate dark-mode version of each slide */
 .diagram--slide { padding: 0; border: 0; background: transparent; }
 .diagram--slide img { width: 100%; height: auto; }
-:root:not([data-theme="light"]) .diagram--slide img { padding: 12px; border-radius: 6px; background: #f7f9fb; }
+.slide-link--light { display: none; }
+[data-theme="light"] .slide-link--light { display: block; }
+[data-theme="light"] .slide-link--dark { display: none; }
 
 /* display math in posts */
 .formula { margin: 1.4em 0; padding: 6px 0; overflow-x: auto; overflow-y: hidden; }
