@@ -39,14 +39,14 @@ The approved mockup is `.superpowers/brainstorm/5956-1794346454/content/full-pag
 ### Structure
 
 1. **Top bar:** `padenarie / cocktail party`, then *How it works*, *Lab* and the theme toggle.
-2. **Header:** eyebrow `BLIND SOURCE SEPARATION`, the title "The Cocktail Party", and a two-sentence lede. No long introduction.
+2. **Header:** the author's original introduction: the title "🍸 Interactive Blind Source Separation demo with ICA", three short paragraphs, and the five-step overview (Sources, Mix, Unmix, Results, About).
 3. **01 Invite guests:** a grid of artwork cards (five columns on desktop, two on phones) showing the name and a round ▶ preview button. Tapping a card toggles the invitation (`aria-pressed`). The meta line reads "N invited · choose at least 2". The last card is **+ Your own sound** (upload or record).
 4. **02 The room:** small overlapping avatars of the invited guests and "Everyone is talking at once…". There is one entry per microphone: a play button, "Microphone n" and a mixture waveform. The main button reads **Start the party** before mixing and **Unmix the room →** afterwards. A ↻ *Remix* text link sits next to it.
 5. **03 Voices recovered:** a summary sentence ("3 of 3 voices recovered · 91% average match"); guests the ICA did not recover count as 0. Each recovered guest gets a card with a thumbnail, name and match %, the recovered waveform over a faint original, and an *Original / Recovered* segmented player. A guest that wasn't recovered (fewer components than guests) gets a muted **Not recovered** card with only the original. Unmatched components appear as muted **Background / noise** cards. The Amari index appears in *Under the hood → Run details*, not in the summary: it is computed from the whitened-space rotation, so next to near-perfect matches it can look contradictory.
 6. **Under the hood** (folded): the convergence curve, the mixing matrix A as a single-hue heatmap, waveform plots for the sources, mixtures and estimates (SVG), the estimate-to-original matching table, run details (iterations, components used, settings), and the PCA vs ICA showcase from `data/stored_results/`.
 7. **How does this work?** (folded): the current About content (infographic, pipeline, QR-T explanation, performance trade-off and links), lightly edited for length.
 8. **Lab drawer:** slides in from the right; on phones it is a full-height sheet.
-   - **Mixing:** difficulty, conditioning (linear or geometric), microphones (auto, or N ≥ guests), background noise and seed.
+   - **Mixing:** difficulty, conditioning (linear or geometric), number of mixtures (microphones: auto, or N ≥ guests), background noise and seed.
    - **Unmixing:** iterations, tolerance, auto PCA knee, denoise mixtures, Wiener strength, denoise estimates and random restarts (5×).
    - **Per guest:** a speed control for each invited guest.
    - **Defaults:** the current app's defaults, except that **Auto PCA knee is off**: with one microphone per guest it often kept too few components.
