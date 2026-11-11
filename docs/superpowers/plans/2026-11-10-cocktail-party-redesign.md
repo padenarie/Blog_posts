@@ -1573,6 +1573,8 @@ git commit -m "Serve a JSON API with FastAPI and remove the Gradio UI" -m "Co-au
   </script>
   <link rel="stylesheet" href="app.css">
   <script type="module" src="js/main.js"></script>
+  <!-- Lets the page scroll inside the huggingface.co iframe (recommended by the HF "Custom Python Spaces" docs). -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js" defer></script>
 </head>
 <body>
   <header class="bar">
@@ -2690,7 +2692,7 @@ function buildMix(state) {
   }
   const intro = el("div", "room-intro");
   intro.append(avatars, el("span", "", "Everyone is talking at once. Each microphone hears a different blend."));
-  const note = el("p", "stale-note", "Guests changed · start the party again");
+  const note = el("p", "stale-note", "Guests changed · Start the party again");
   note.hidden = true;
   const mics = el("div", "mics");
   for (const mic of mix.microphones) {
@@ -3201,6 +3203,8 @@ function renderSpeeds(state) {
       const input = document.createElement("input");
       Object.assign(input, { type: "range", min: "0.5", max: "2", step: "0.05" });
       input.dataset.guest = id;
+      input.id = `speed-${id}`;
+      label.htmlFor = input.id; // explicit target: the <output> inside the label would otherwise take the label
       label.append(line, input);
       box.append(label);
     }
