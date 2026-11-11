@@ -27,6 +27,7 @@ export async function loadPosts(postsDir) {
       tags: Array.isArray(data.tags) ? data.tags : [],
       hero: data.hero === true,
       cover: data.cover ?? '',
+      coverDark: data.coverDark ?? '',
       body,
       readingTime: readingTime(body),
     });

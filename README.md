@@ -33,7 +33,8 @@ date: 2026-02-01
 description: "One-line summary shown on the home page."
 tags: [control, tensors]
 hero: true                # optional: show the 3D tensor hero on this post
-cover: img/something.png  # optional: static cover image
+cover: /assets/img/x.png  # optional: image next to the post's card on the home page
+coverDark: /assets/img/x-dark.png  # optional: cover shown in dark mode
 ---
 
 Write in **Markdown**.

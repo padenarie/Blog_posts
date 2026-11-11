@@ -261,6 +261,14 @@ body[data-page="home"] main, body[data-page="demo"] main { max-width: 1320px; }
 .card-title { margin: 0 0 8px; font-size: 1.2rem; color: var(--text); }
 .card-meta { margin: 0 0 10px; color: var(--text-muted); font-size: 0.82rem; }
 .card-desc { margin: 0; color: var(--text-muted); }
+/* cards with a cover image span the grid, text left and image right like the featured work */
+.card--cover { grid-column: 1 / -1; display: grid; gap: 20px; }
+.card-cover { min-width: 0; display: flex; align-items: center; }
+.card-cover img { display: block; width: 100%; height: auto; }
+.card-cover-light + .card-cover-dark { display: none; }
+:root:not([data-theme="light"]) .card-cover-light:has(+ .card-cover-dark) { display: none; }
+:root:not([data-theme="light"]) .card-cover-dark { display: block; }
+@media (min-width: 720px) { .card--cover { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; gap: 32px; } }
 .tags { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 12px 0 0; }
 .tags li {
   font-size: 0.72rem; letter-spacing: 0.04em; color: var(--accent);

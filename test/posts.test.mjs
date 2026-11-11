@@ -26,6 +26,7 @@ test('sorts by date descending and parses fields', async () => {
   assert.deepEqual(newer.tags, ['b', 'c']);
   assert.equal(newer.hero, true);
   assert.equal(newer.cover, '');
+  assert.equal(newer.coverDark, '');
 });
 
 test('post with no front-matter: title falls back to slug, no crash', async () => {

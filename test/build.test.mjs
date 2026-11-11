@@ -59,6 +59,30 @@ test('special characters in titles are escaped (Review Focus #2)', async () => {
   }
 });
 
+test('home cards show a post cover with an optional dark-mode variant', async () => {
+  const { writeFile, rm } = await import('node:fs/promises');
+  const withCover = join(root, 'content/posts/zz-cover.md');
+  const plain = join(root, 'content/posts/zz-plain.md');
+  await writeFile(withCover, '---\ntitle: "Cover post"\ndate: 2025-03-03\ncover: /assets/img/c.png\ncoverDark: /assets/img/c-dark.png\n---\nbody\n');
+  await writeFile(plain, '---\ntitle: "Plain post"\ndate: 2025-03-02\n---\nbody\n');
+  try {
+    await run('node', ['src/build.mjs']);
+    const home = await readFile(join(root, 'dist/index.html'), 'utf8');
+    const card = home.match(/<a class="card[^"]*" href="\/posts\/zz-cover\.html">[\s\S]*?<\/a>/)[0];
+    assert.match(card, /class="card card--cover reveal"/);
+    assert.match(card, /<div class="card-cover" aria-hidden="true">/);
+    assert.match(card, /<img class="card-cover-light" src="\/assets\/img\/c\.png" alt="" loading="lazy">/);
+    assert.match(card, /<img class="card-cover-dark" src="\/assets\/img\/c-dark\.png" alt="" loading="lazy">/);
+    const plainCard = home.match(/<a class="card[^"]*" href="\/posts\/zz-plain\.html">[\s\S]*?<\/a>/)[0];
+    assert.match(plainCard, /^<a class="card reveal"/);
+    assert.doesNotMatch(plainCard, /card-cover/);
+  } finally {
+    await rm(withCover, { force: true });
+    await rm(plain, { force: true });
+    await run('node', ['src/build.mjs']);
+  }
+});
+
 test('zero posts: home still builds (Review Focus #3)', async () => {
   const { rename } = await import('node:fs/promises');
   const postsDir = join(root, 'content/posts');

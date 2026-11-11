@@ -3,6 +3,8 @@ title: "I tried replacing cloud AI with local models. The useful result was a hy
 date: 2026-11-10
 description: "Three weeks of local-only AI coding, the usage data, and the spec-driven workflow that stayed."
 tags: [local-ai, agents, workflow]
+cover: /assets/img/local-ai/slide-workflow.png
+coverDark: /assets/img/local-ai/slide-workflow-dark.png
 ---
 
 **13 min read**

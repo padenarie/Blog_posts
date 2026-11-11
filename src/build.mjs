@@ -109,12 +109,21 @@ async function main() {
   }
 
   // --- home ---
+  const cardCover = (p) => {
+    if (!p.cover) return '';
+    const light = `<img class="card-cover-light" src="${escapeHtml(p.cover)}" alt="" loading="lazy">`;
+    const dark = p.coverDark ? `<img class="card-cover-dark" src="${escapeHtml(p.coverDark)}" alt="" loading="lazy">` : '';
+    return `<div class="card-cover" aria-hidden="true">${light}${dark}</div>`;
+  };
   const cards = posts.map((p) => `
-    <a class="card reveal" href="/posts/${p.slug}.html">
-      <h2 class="card-title">${escapeHtml(p.title)}</h2>
-      <p class="card-meta">${p.date ? `<time datetime="${escapeHtml(p.date)}">${escapeHtml(p.date)}</time> · ` : ''}${p.readingTime} min read</p>
-      <p class="card-desc">${escapeHtml(p.description)}</p>
-      ${p.tags.length ? `<ul class="tags">${p.tags.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>` : ''}
+    <a class="card${p.cover ? ' card--cover' : ''} reveal" href="/posts/${p.slug}.html">
+      <div class="card-body">
+        <h2 class="card-title">${escapeHtml(p.title)}</h2>
+        <p class="card-meta">${p.date ? `<time datetime="${escapeHtml(p.date)}">${escapeHtml(p.date)}</time> · ` : ''}${p.readingTime} min read</p>
+        <p class="card-desc">${escapeHtml(p.description)}</p>
+        ${p.tags.length ? `<ul class="tags">${p.tags.map((t) => `<li>${escapeHtml(t)}</li>`).join('')}</ul>` : ''}
+      </div>
+      ${cardCover(p)}
     </a>`).join('');
   const work = site.featuredWork;
   const taglineParts = site.tagline.trim().split(/\s+/);
