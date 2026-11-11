@@ -13,6 +13,19 @@ async function draft() {
   return { data, body, html: renderMarkdown(body) };
 }
 
+test('local AI draft images resolve from the markdown file and from the published page', async () => {
+  const { body } = await draft();
+  const srcs = [...body.matchAll(/<img[^>]*\ssrc="([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(srcs.length > 20, `only ${srcs.length} images`);
+  const { access } = await import('node:fs/promises');
+  const { dirname, resolve } = await import('node:path');
+  for (const src of new Set(srcs)) {
+    await access(resolve(dirname(draftPath), src));
+    const published = new URL(src, 'https://example.test/posts/local-ai.html').pathname;
+    await access(join(root, published));
+  }
+});
+
 test('local AI draft has the four redrawn diagrams with captions', async () => {
   const { html } = await draft();
   for (const kind of ['timeline', 'stack', 'sizes', 'workflow']) {
